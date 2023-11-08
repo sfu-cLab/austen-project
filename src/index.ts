@@ -1,12 +1,21 @@
-import express from 'express';
+require('dotenv').config();
 
-const app: express.Application = express();
-const port: number = 3000;
+import express from 'express';
+const { ExpressPeerServer } = require('peer');
+
+const app = express();
+const PORT: number | string = process.env.PORT || 3000;
 
 app.get('/', (req: express.Request, res: express.Response) => {
-  res.send('Hello World with TypeScript!');
+    res.send('Hello World with TypeScript!');
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+const server = app.listen(PORT, () => {
+    console.log(`⚡️[server]: Server is running at http://localhost:${PORT}`);
 });
+
+const peerServer = ExpressPeerServer(server, {
+    debug: true,
+});
+
+app.use('/peerjs', peerServer);
