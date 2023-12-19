@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 9000;
 const server = http.createServer(app);
 const io = require('socket.io')(server, {
   cors: {
-    origin: "http://localhost:5500",
+    origin: ["http://localhost:5500", "https://clabdancecard.github.io/fan-animation-temp/"],
     methods: ["GET", "POST"],
     credentials: true
   }
