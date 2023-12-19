@@ -18,6 +18,7 @@ const io = require('socket.io')(server, {
     credentials: true
   }
 });
+
 let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '🐧'];
 let userEmojis = {};
 
@@ -31,13 +32,16 @@ io.on('connection', (socket) => {
         console.log("No more emojis available");
         socket.emit('noEmojiAvailable');
     }
-
+    
+    io.emit('onlineUsers', userEmojis);
+    
     socket.on('disconnect', () => {
         if (userEmojis[socket.id]) {
             availableEmojis.push(userEmojis[socket.id]);
             console.log(`Emoji ${userEmojis[socket.id]} released from user ${socket.id}`);
             delete userEmojis[socket.id];
         }
+        io.emit('onlineUsers', userEmojis);
     });
 });
 
