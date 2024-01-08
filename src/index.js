@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const { ExpressPeerServer } = require('peer');
 const http = require('http');
-const socketIo = require('socket.io');
 
 const app = express();
 app.use(cors());
@@ -21,6 +20,17 @@ const io = require('socket.io')(server, {
 
 let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '🐧'];
 let userEmojis = {};
+
+let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
+
+function scheduleCall(slot, id1, id2) {
+    if (slot < 0 || slot > 7) {
+        console.log("Invalid slot");
+        return;
+    }
+    schedule[slot] = {id1, id2};
+    console.log('All scheduled calls:' + JSON.stringify(schedule));
+}
 
 function assignEmoji() {
     if (availableEmojis.length > 0) {
@@ -44,6 +54,7 @@ io.on('connection', (socket) => {
     const assignedEmoji = assignEmoji();
     if (assignedEmoji) {
         userEmojis[socket.id] = assignedEmoji;
+        console.log(`Emoji ${assignedEmoji} assigned to user ${socket.id}`);
         socket.emit('assignEmoji', assignedEmoji);
     } else {
         socket.emit('noEmojiAvailable');
@@ -57,6 +68,12 @@ io.on('connection', (socket) => {
         handleDisconnect(socket);
     });
 
+    socket.on('emojiClicked', (data) => {
+        console.log(data);
+        scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
+        io.emit('newCallScheduled', schedule);
+    });
+    
     io.emit('onlineUsers', userEmojis);
 });
 
