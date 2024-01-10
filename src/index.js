@@ -71,7 +71,7 @@ io.on('connection', (socket) => {
     socket.on('emojiClicked', (data) => {
         console.log(data);
         scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
-        io.emit('newCallScheduled', schedule);
+        io.emit('newCallScheduled', data);
     });
     
     io.emit('onlineUsers', userEmojis);
