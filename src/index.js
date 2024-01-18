@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const { ExpressPeerServer } = require('peer');
 const http = require('http');
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
@@ -77,12 +77,20 @@ io.on('connection', (socket) => {
     io.emit('onlineUsers', userEmojis);
 });
 
+const path = require("path");
+const { ExpressPeerServer } = require("peer");
+
 const peerServer = ExpressPeerServer(server, {
+  proxied: true,
   debug: true,
-  path: '/'
+  path: "/myapp",
+  ssl: {},
 });
 
-app.use('/peerjs', peerServer);
+app.use(peerServer);
+
+app.use(express.static(path.join(__dirname)));
+
 
 server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
