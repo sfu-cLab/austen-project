@@ -41,6 +41,24 @@ async function updateUserAvailability(userName, isAvailable) {
     }
 }
 
+async function updateUserSignedInStatus(emoji, isSignedIn) {
+    try {
+        const data = await fs.readFile('src/users.json', 'utf8');
+        let users = JSON.parse(data);
+        const userIndex = users.findIndex(user => user.emoji === emoji);
+        if (userIndex === -1) {
+            console.log('User not found');
+            return;
+        }
+        users[userIndex].isSignedIn = isSignedIn;
+        await fs.writeFile('src/users.json', JSON.stringify(users));
+        console.log('User signed in status updated for ' + emoji + ' to ' + isSignedIn);
+    }
+    catch (err) {
+        console.log('Error updating user signed in status: ', err);
+    }
+}
+
 async function getUsers() {
     try {
         const data = await fs.readFile('src/users.json', 'utf8');
@@ -107,6 +125,13 @@ io.on('connection', async (socket) => {
         io.emit('users', users);
         
         io.emit('onlineUsers', users);
+
+        socket.on('userSignedIn', (emoji) => {
+            console.log(emoji + ' signed in');
+            updateUserSignedInStatus(emoji, true);
+            io.emit('onlineUsers', users);
+        }
+        );
     } catch (err) {
         console.error('Error in connection handler:', err);
     }
