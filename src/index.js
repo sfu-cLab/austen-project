@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-
+const fs = require('fs').promises;
 const app = express();
 
 app.use(cors());
@@ -22,6 +22,52 @@ let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '
 let userEmojis = {};
 
 let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
+
+async function updateUserAvailability(userName, isAvailable) {
+    try {
+        const data = await fs.readFile('./users.json', 'utf8');
+        let users = JSON.parse(data);
+        const userIndex = users.findIndex(user => user.name === userName);
+        if (userIndex === -1) {
+            console.log('User not found');
+            return;
+        }
+        users[userIndex].isAvailable = isAvailable;
+        await fs.writeFile('src/users.json', JSON.stringify(users));
+        console.log('User availability updated for ' + userName + ' to ' + isAvailable);
+    }
+    catch (err) {
+        console.log('Error updating user availability: ', err);
+    }
+}
+
+async function updateUserSignedInStatus(emoji, isSignedIn) {
+    try {
+        const data = await fs.readFile('src/users.json', 'utf8');
+        let users = JSON.parse(data);
+        const userIndex = users.findIndex(user => user.emoji === emoji);
+        if (userIndex === -1) {
+            console.log('User not found');
+            return;
+        }
+        users[userIndex].isSignedIn = isSignedIn;
+        await fs.writeFile('src/users.json', JSON.stringify(users));
+        console.log('User signed in status updated for ' + emoji + ' to ' + isSignedIn);
+    }
+    catch (err) {
+        console.log('Error updating user signed in status: ', err);
+    }
+}
+
+async function getUsers() {
+    try {
+        const data = await fs.readFile('src/users.json', 'utf8');
+        return JSON.parse(data);
+    }
+    catch (err) {
+        console.log('Error getting users: ', err);
+    }
+}
 
 function scheduleCall(slot, id1, id2) {
     if (slot < 0 || slot > 7) {
@@ -50,32 +96,47 @@ function handleDisconnect(socket) {
     socket.emit('onlineUsers', userEmojis);
 }
 
-io.on('connection', (socket) => {
-    const assignedEmoji = assignEmoji();
-    if (assignedEmoji) {
-        userEmojis[socket.id] = assignedEmoji;
-        console.log(`Emoji ${assignedEmoji} assigned to user ${socket.id}`);
-        socket.emit('assignEmoji', assignedEmoji);
-    } else {
-        socket.emit('noEmojiAvailable');
+io.on('connection', async (socket) => {
+    try {
+        let users = await getUsers();
+        const assignedEmoji = assignEmoji();
+        if (assignedEmoji) {
+            userEmojis[socket.id] = assignedEmoji;
+            console.log(`Emoji ${assignedEmoji} assigned to user ${socket.id}`);
+            socket.emit('assignEmoji', assignedEmoji);
+        } else {
+            socket.emit('noEmojiAvailable');
+        }
+
+        socket.on('clientDisconnecting', () => {
+            handleDisconnect(socket);
+        });
+
+        socket.on('disconnect', () => {
+            handleDisconnect(socket);
+        });
+
+        socket.on('emojiClicked', (data) => {
+            console.log(data);
+            scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
+            io.emit('newCallScheduled', data);
+        });
+
+        io.emit('users', users);
+        
+        io.emit('onlineUsers', users);
+
+        socket.on('userSignedIn', (emoji) => {
+            console.log(emoji + ' signed in');
+            updateUserSignedInStatus(emoji, true);
+            io.emit('onlineUsers', users);
+        }
+        );
+    } catch (err) {
+        console.error('Error in connection handler:', err);
     }
-
-    socket.on('clientDisconnecting', () => {
-        handleDisconnect(socket);
-    });
-
-    socket.on('disconnect', () => {
-        handleDisconnect(socket);
-    });
-
-    socket.on('emojiClicked', (data) => {
-        console.log(data);
-        scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
-        io.emit('newCallScheduled', data);
-    });
-    
-    io.emit('onlineUsers', userEmojis);
 });
+
 
 const path = require("path");
 const { ExpressPeerServer } = require("peer");
