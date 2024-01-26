@@ -23,6 +23,24 @@ let userEmojis = {};
 
 let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
 
+async function updateUserAvailability(userName, isAvailable) {
+    try {
+        const data = await fs.readFile('./users.json', 'utf8');
+        let users = JSON.parse(data);
+        const userIndex = users.findIndex(user => user.name === userName);
+        if (userIndex === -1) {
+            console.log('User not found');
+            return;
+        }
+        users[userIndex].isAvailable = isAvailable;
+        await fs.writeFile('./users.json', JSON.stringify(users));
+        console.log('User availability updated for ' + userName + ' to ' + isAvailable);
+    }
+    catch (err) {
+        console.log('Error updating user availability: ', err);
+    }
+}
+
 function scheduleCall(slot, id1, id2) {
     if (slot < 0 || slot > 7) {
         console.log("Invalid slot");
