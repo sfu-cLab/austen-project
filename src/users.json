@@ -1,1 +1,1 @@
-[{"name":"Jane","emoji":"🐶","schedule":[1,2,3,4,5],"isAvailable":false,"isSignedIn":true},{"name":"Mary","emoji":"🐱","schedule":[3],"isAvailable":false,"isSignedIn":false},{"name":"Bob","emoji":"🐭","schedule":[4],"isAvailable":false,"isSignedIn":true}]
+[{"name":"Jane","emoji":"🐶","schedule":[1,2,3,4,5],"isAvailable":true,"isSignedIn":true},{"name":"Mary","emoji":"🐱","schedule":[3],"isAvailable":true,"isSignedIn":false},{"name":"Bob","emoji":"🐭","schedule":[4],"isAvailable":true,"isSignedIn":true}]

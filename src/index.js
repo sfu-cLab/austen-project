@@ -23,18 +23,18 @@ let userEmojis = {};
 
 let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
 
-async function updateUserAvailability(userName, isAvailable) {
+async function toggleUserAvailability(emoji) {
     try {
-        const data = await fs.readFile('./users.json', 'utf8');
+        const data = await fs.readFile('src/users.json', 'utf8');
         let users = JSON.parse(data);
-        const userIndex = users.findIndex(user => user.name === userName);
+        const userIndex = users.findIndex(user => user.emoji === emoji);
         if (userIndex === -1) {
             console.log('User not found');
             return;
         }
-        users[userIndex].isAvailable = isAvailable;
+        users[userIndex].isAvailable = !users[userIndex].isAvailable;
         await fs.writeFile('src/users.json', JSON.stringify(users));
-        console.log('User availability updated for ' + userName + ' to ' + isAvailable);
+        console.log('User availability updated for ' + emoji + ' to ' + users[userIndex].isAvailable);
     }
     catch (err) {
         console.log('Error updating user availability: ', err);
@@ -120,6 +120,11 @@ io.on('connection', async (socket) => {
             console.log(data);
             scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
             io.emit('newCallScheduled', data);
+        });
+
+        socket.on('hideFan', (emoji) => {
+            toggleUserAvailability(emoji);
+            io.emit('users', users);
         });
 
         io.emit('users', users);
