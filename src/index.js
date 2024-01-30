@@ -122,9 +122,11 @@ io.on('connection', async (socket) => {
             io.emit('newCallScheduled', data);
         });
 
-        socket.on('hideFan', (emoji) => {
-            toggleUserAvailability(emoji);
-            io.emit('users', users);
+        socket.on('hideFan', async (emoji) => {
+            await toggleUserAvailability(emoji);
+            let updatedUsers = await getUsers();
+            console.log('Updated users: ', updatedUsers);
+            io.emit('users', updatedUsers);
         });
 
         io.emit('users', users);
@@ -156,7 +158,6 @@ const peerServer = ExpressPeerServer(server, {
 app.use(peerServer);
 
 app.use(express.static(path.join(__dirname)));
-
 
 server.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
