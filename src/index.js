@@ -18,6 +18,19 @@ const io = require('socket.io')(server, {
   }
 });
 
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function iterateWithDelays(times, delayDuration) {
+    for (let i = 1; i <= times; i++) {
+        console.log(`Iteration ${i} at ${new Date().toLocaleTimeString()}`);
+        await delay(delayDuration);
+    }
+}
+iterateWithDelays(8, 15 * 60 * 1000);
+
+
 let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '🐧'];
 let userEmojis = {};
 
