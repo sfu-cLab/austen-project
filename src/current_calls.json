@@ -1,0 +1,24 @@
+{
+  "calls": {
+    "1": [
+      {
+        "user1": "cat",
+        "user2": "dog"
+      },
+      {
+        "user1": "horse",
+        "user2": "cow"
+      }
+    ],
+    "2": [
+      {
+        "user1": "cat",
+        "user2": "dog"
+      },
+      {
+        "user1": "horse",
+        "user2": "cow"
+      }
+    ]
+  }
+}
