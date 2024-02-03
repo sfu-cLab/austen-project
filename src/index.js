@@ -28,10 +28,8 @@ async function iterateWithDelays(times, delayDuration) {
         await delay(delayDuration);
     }
 }
-iterateWithDelays(8, 15 * 60 * 1000);
+iterateWithDelays(8, 15 * 60);
 
-
-let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '🐧'];
 let userEmojis = {};
 
 let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
@@ -91,15 +89,6 @@ function scheduleCall(slot, id1, id2) {
     console.log('All scheduled calls:' + JSON.stringify(schedule));
 }
 
-function assignEmoji() {
-    if (availableEmojis.length > 0) {
-        return availableEmojis.pop();
-    } else {
-        console.log("No more emojis available");
-        return null;
-    }
-}
-
 function handleDisconnect(socket) {
     if (userEmojis[socket.id]) {
         availableEmojis.push(userEmojis[socket.id]);
@@ -112,14 +101,6 @@ function handleDisconnect(socket) {
 io.on('connection', async (socket) => {
     try {
         let users = await getUsers();
-        const assignedEmoji = assignEmoji();
-        if (assignedEmoji) {
-            userEmojis[socket.id] = assignedEmoji;
-            console.log(`Emoji ${assignedEmoji} assigned to user ${socket.id}`);
-            socket.emit('assignEmoji', assignedEmoji);
-        } else {
-            socket.emit('noEmojiAvailable');
-        }
 
         socket.on('clientDisconnecting', () => {
             handleDisconnect(socket);
