@@ -123,6 +123,13 @@ io.on('connection', async (socket) => {
             io.emit('onlineUsers', users);
         });
 
+        socket.on('callUser', (data) => {
+            console.log('callerId: ', data.callerId);
+            console.log('idToCall: ', data.idToCall);
+            console.log('timeslot: ', data.timeslot);
+            io.to(data.to).emit('call', {from: data.from});
+        });
+
 
     } catch (err) {
         console.error('Error in connection handler:', err);
