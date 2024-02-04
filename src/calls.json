@@ -1,0 +1,12 @@
+{
+  "timeslots": [
+    {"slot": 1, "calls": []},
+    {"slot": 2, "calls": []},
+    {"slot": 3, "calls": []},
+    {"slot": 4, "calls": []},
+    {"slot": 5, "calls": []},
+    {"slot": 6, "calls": []},
+    {"slot": 7, "calls": []},
+    {"slot": 8, "calls": []}
+  ]
+}
