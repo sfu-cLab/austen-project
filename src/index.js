@@ -42,7 +42,7 @@ async function toggleUserAvailability(emoji) {
             return;
         }
         users[userIndex].isAvailable = !users[userIndex].isAvailable;
-        await fs.writeFile('src/users.json', JSON.stringify(users));
+        await fs.writeFile('src/users.json', JSON.stringify(users, null, 2));
         console.log('User availability updated for ' + emoji + ' to ' + users[userIndex].isAvailable);
     }
     catch (err) {
@@ -60,7 +60,7 @@ async function updateUserSignedInStatus(emoji, isSignedIn) {
             return;
         }
         users[userIndex].isSignedIn = isSignedIn;
-        await fs.writeFile('src/users.json', JSON.stringify(users));
+        await fs.writeFile('src/users.json', JSON.stringify(users, null, 2));
         console.log('User signed in status updated for ' + emoji + ' to ' + isSignedIn);
     }
     catch (err) {
@@ -108,6 +108,16 @@ async function addCall(id1, id2, timeslot) {
     }
 }
 
+async function getCalls() {
+    try {
+        const data = await fs.readFile('src/calls.json', 'utf8');
+        return JSON.parse(data);
+    }
+    catch (err) {
+        console.log('Error getting calls: ', err);
+    }
+}
+
 io.on('connection', async (socket) => {
     try {
         let users = await getUsers();
@@ -138,7 +148,8 @@ io.on('connection', async (socket) => {
             console.log('idToCall: ', data.idToCall);
             console.log('timeslot: ', data.timeslot);
             await addCall(data.callerId, data.idToCall, data.timeslot);
-            io.to(data.to).emit('call', {from: data.from});
+            let currentcalls = await getCalls();
+            io.emit('newCall', currentcalls);
         });
 
 
