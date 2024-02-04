@@ -106,16 +106,6 @@ io.on('connection', async (socket) => {
             handleDisconnect(socket);
         });
 
-        socket.on('disconnect', () => {
-            handleDisconnect(socket);
-        });
-
-        socket.on('emojiClicked', (data) => {
-            console.log(data);
-            scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
-            io.emit('newCallScheduled', data);
-        });
-
         socket.on('hideFan', async (emoji) => {
             await toggleUserAvailability(emoji);
             let updatedUsers = await getUsers();
@@ -131,8 +121,9 @@ io.on('connection', async (socket) => {
             console.log(emoji + ' signed in');
             updateUserSignedInStatus(emoji, true);
             io.emit('onlineUsers', users);
-        }
-        );
+        });
+
+
     } catch (err) {
         console.error('Error in connection handler:', err);
     }
