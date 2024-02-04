@@ -32,8 +32,6 @@ iterateWithDelays(8, 15 * 60);
 
 let userEmojis = {};
 
-let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
-
 async function toggleUserAvailability(emoji) {
     try {
         const data = await fs.readFile('src/users.json', 'utf8');
@@ -80,15 +78,6 @@ async function getUsers() {
     }
 }
 
-function scheduleCall(slot, id1, id2) {
-    if (slot < 0 || slot > 7) {
-        console.log("Invalid slot");
-        return;
-    }
-    schedule[slot] = {id1, id2};
-    console.log('All scheduled calls:' + JSON.stringify(schedule));
-}
-
 function handleDisconnect(socket) {
     if (userEmojis[socket.id]) {
         availableEmojis.push(userEmojis[socket.id]);
@@ -96,6 +85,27 @@ function handleDisconnect(socket) {
         delete userEmojis[socket.id];
     }
     socket.emit('onlineUsers', userEmojis);
+}
+
+async function addCall(id1, id2, timeslot) {
+    try {
+        const data = await fs.readFile('src/calls.json', 'utf8');
+        let calls = JSON.parse(data);
+
+        if (!calls[timeslot]) {
+            calls[timeslot] = [];
+        }
+
+        if (calls[timeslot].length < 6 && !calls[timeslot].find(call => (call.id1 === id1 && call.id2 === id2) || (call.id1 === id2 && call.id2 === id1))){
+            calls[timeslot].push({ id1, id2 });
+            await fs.writeFile('src/calls.json', JSON.stringify(calls, null, 2));
+            console.log(`Call scheduled in timeslot ${timeslot}.`);
+        } else {
+            console.log(`Cannot schedule call in timeslot ${timeslot}, limit reached or call already exists.`);
+        }
+    } catch (err) {
+        console.error('Error adding call: ', err);
+    }
 }
 
 io.on('connection', async (socket) => {
@@ -123,10 +133,11 @@ io.on('connection', async (socket) => {
             io.emit('onlineUsers', users);
         });
 
-        socket.on('callUser', (data) => {
+        socket.on('callUser', async (data) => {
             console.log('callerId: ', data.callerId);
             console.log('idToCall: ', data.idToCall);
             console.log('timeslot: ', data.timeslot);
+            await addCall(data.callerId, data.idToCall, data.timeslot);
             io.to(data.to).emit('call', {from: data.from});
         });
 
