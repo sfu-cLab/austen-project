@@ -18,10 +18,19 @@ const io = require('socket.io')(server, {
   }
 });
 
-let availableEmojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🐻', '🦋', '🐧'];
-let userEmojis = {};
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-let schedule = new Array(8).fill(null).map(() => ({id1: null, id2: null}));
+async function iterateWithDelays(times, delayDuration) {
+    for (let i = 1; i <= times; i++) {
+        console.log(`Iteration ${i} at ${new Date().toLocaleTimeString()}`);
+        await delay(delayDuration);
+    }
+}
+iterateWithDelays(8, 15 * 60);
+
+let userEmojis = {};
 
 async function toggleUserAvailability(emoji) {
     try {
@@ -33,7 +42,7 @@ async function toggleUserAvailability(emoji) {
             return;
         }
         users[userIndex].isAvailable = !users[userIndex].isAvailable;
-        await fs.writeFile('src/users.json', JSON.stringify(users));
+        await fs.writeFile('src/users.json', JSON.stringify(users, null, 2));
         console.log('User availability updated for ' + emoji + ' to ' + users[userIndex].isAvailable);
     }
     catch (err) {
@@ -51,7 +60,7 @@ async function updateUserSignedInStatus(emoji, isSignedIn) {
             return;
         }
         users[userIndex].isSignedIn = isSignedIn;
-        await fs.writeFile('src/users.json', JSON.stringify(users));
+        await fs.writeFile('src/users.json', JSON.stringify(users, null, 2));
         console.log('User signed in status updated for ' + emoji + ' to ' + isSignedIn);
     }
     catch (err) {
@@ -69,24 +78,6 @@ async function getUsers() {
     }
 }
 
-function scheduleCall(slot, id1, id2) {
-    if (slot < 0 || slot > 7) {
-        console.log("Invalid slot");
-        return;
-    }
-    schedule[slot] = {id1, id2};
-    console.log('All scheduled calls:' + JSON.stringify(schedule));
-}
-
-function assignEmoji() {
-    if (availableEmojis.length > 0) {
-        return availableEmojis.pop();
-    } else {
-        console.log("No more emojis available");
-        return null;
-    }
-}
-
 function handleDisconnect(socket) {
     if (userEmojis[socket.id]) {
         availableEmojis.push(userEmojis[socket.id]);
@@ -96,30 +87,43 @@ function handleDisconnect(socket) {
     socket.emit('onlineUsers', userEmojis);
 }
 
+async function addCall(id1, id2, timeslot) {
+    try {
+        const data = await fs.readFile('src/calls.json', 'utf8');
+        let calls = JSON.parse(data);
+
+        if (!calls[timeslot]) {
+            calls[timeslot] = [];
+        }
+
+        if (calls[timeslot].length < 6 && !calls[timeslot].find(call => (call.id1 === id1 && call.id2 === id2) || (call.id1 === id2 && call.id2 === id1))){
+            calls[timeslot].push({ id1, id2 });
+            await fs.writeFile('src/calls.json', JSON.stringify(calls, null, 2));
+            console.log(`Call scheduled in timeslot ${timeslot}.`);
+        } else {
+            console.log(`Cannot schedule call in timeslot ${timeslot}, limit reached or call already exists.`);
+        }
+    } catch (err) {
+        console.error('Error adding call: ', err);
+    }
+}
+
+async function getCalls() {
+    try {
+        const data = await fs.readFile('src/calls.json', 'utf8');
+        return JSON.parse(data);
+    }
+    catch (err) {
+        console.log('Error getting calls: ', err);
+    }
+}
+
 io.on('connection', async (socket) => {
     try {
         let users = await getUsers();
-        const assignedEmoji = assignEmoji();
-        if (assignedEmoji) {
-            userEmojis[socket.id] = assignedEmoji;
-            console.log(`Emoji ${assignedEmoji} assigned to user ${socket.id}`);
-            socket.emit('assignEmoji', assignedEmoji);
-        } else {
-            socket.emit('noEmojiAvailable');
-        }
 
         socket.on('clientDisconnecting', () => {
             handleDisconnect(socket);
-        });
-
-        socket.on('disconnect', () => {
-            handleDisconnect(socket);
-        });
-
-        socket.on('emojiClicked', (data) => {
-            console.log(data);
-            scheduleCall(data.slot, data.callSenderEmoji, data.callReceiverEmoji);
-            io.emit('newCallScheduled', data);
         });
 
         socket.on('hideFan', async (emoji) => {
@@ -137,8 +141,18 @@ io.on('connection', async (socket) => {
             console.log(emoji + ' signed in');
             updateUserSignedInStatus(emoji, true);
             io.emit('onlineUsers', users);
-        }
-        );
+        });
+
+        socket.on('callUser', async (data) => {
+            console.log('callerId: ', data.callerId);
+            console.log('idToCall: ', data.idToCall);
+            console.log('timeslot: ', data.timeslot);
+            await addCall(data.callerId, data.idToCall, data.timeslot);
+            let currentcalls = await getCalls();
+            io.emit('newCall', currentcalls);
+        });
+
+
     } catch (err) {
         console.error('Error in connection handler:', err);
     }
