@@ -3,11 +3,13 @@ const callService = require('../services/callService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
-        console.log('A user connected');
+        console.log('A user connected: ', socket.id); // TODO log user emoji because socket.id is different each time
 
         try {
             let users = await userService.getUsers();
+            let currentCalls = await callService.getCalls();
             io.emit('users', users);
+            io.emit('newCall', currentCalls);
 
             socket.on('clientDisconnecting', () => {
                 console.log('A user disconnected');
@@ -27,9 +29,8 @@ module.exports = function(io) {
             });
 
             socket.on('callUser', async (data) => {
-                console.log(`callerId: ${data.callerId}, idToCall: ${data.idToCall}, timeslot: ${data.timeslot}`);
                 await callService.addCall(data.callerId, data.idToCall, data.timeslot);
-                let currentCalls = await callService.getCalls();
+                currentCalls = await callService.getCalls();
                 io.emit('newCall', currentCalls);
             });
         } catch (err) {
