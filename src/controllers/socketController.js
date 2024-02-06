@@ -3,11 +3,13 @@ const callService = require('../services/callService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
-        console.log('A user connected');
+        console.log('A user connected: ', socket.id); // TODO log user emoji because socket.id is different each time
 
         try {
             let users = await userService.getUsers();
-            io.emit('users', users);
+            let currentCalls = await callService.getCalls();
+            io.emit('users', { users: users, calls: currentCalls });
+            io.emit('newCall', currentCalls);
 
             socket.on('clientDisconnecting', () => {
                 console.log('A user disconnected');
@@ -16,8 +18,8 @@ module.exports = function(io) {
             socket.on('hideFan', async (emoji) => {
                 await userService.toggleUserAvailability(emoji);
                 let updatedUsers = await userService.getUsers();
-                console.log('Updated users: ', updatedUsers);
-                io.emit('users', updatedUsers);
+                let currentCalls = await callService.getCalls();
+                io.emit('users', { users: updatedUsers, calls: currentCalls });
             });
 
             socket.on('userSignedIn', async (emoji) => {
@@ -27,9 +29,8 @@ module.exports = function(io) {
             });
 
             socket.on('callUser', async (data) => {
-                console.log(`callerId: ${data.callerId}, idToCall: ${data.idToCall}, timeslot: ${data.timeslot}`);
                 await callService.addCall(data.callerId, data.idToCall, data.timeslot);
-                let currentCalls = await callService.getCalls();
+                currentCalls = await callService.getCalls();
                 io.emit('newCall', currentCalls);
             });
         } catch (err) {
