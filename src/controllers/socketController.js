@@ -8,7 +8,7 @@ module.exports = function(io) {
         try {
             let users = await userService.getUsers();
             let currentCalls = await callService.getCalls();
-            io.emit('users', users);
+            io.emit('users', { users: users, calls: currentCalls });
             io.emit('newCall', currentCalls);
 
             socket.on('clientDisconnecting', () => {
@@ -18,8 +18,8 @@ module.exports = function(io) {
             socket.on('hideFan', async (emoji) => {
                 await userService.toggleUserAvailability(emoji);
                 let updatedUsers = await userService.getUsers();
-                console.log('Updated users: ', updatedUsers);
-                io.emit('users', updatedUsers);
+                let currentCalls = await callService.getCalls();
+                io.emit('users', { users: updatedUsers, calls: currentCalls });
             });
 
             socket.on('userSignedIn', async (emoji) => {
