@@ -1,4 +1,8 @@
-module.exports = function(app) {
-    // For future implementation
-    // Example: app.get('/api/users', userController.getUsers);
+const callService = require("./services/callService");
+
+module.exports = function (app) {
+	app.get("/api/schedule", async (req, res) => {
+        let data = await callService.getScheduledCalls();
+		res.send(data);
+	});
 };

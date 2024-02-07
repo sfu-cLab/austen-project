@@ -1,5 +1,6 @@
 const fsUtils = require('../utils/fsUtils');
 const callsFilePath = 'src/calls.json';
+const timeslotPath = 'src/timeslots.json';
 
 async function addCall(id1, id2, timeslot) {
     let calls = await fsUtils.readJsonFile(callsFilePath);
@@ -20,7 +21,12 @@ async function getCalls() {
     return await fsUtils.readJsonFile(callsFilePath);
 }
 
+async function getScheduledCalls() {
+    return await fsUtils.readJsonFile(timeslotPath);
+}
+
 module.exports = {
     addCall,
     getCalls,
+    getScheduledCalls,
 };
