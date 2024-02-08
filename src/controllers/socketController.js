@@ -20,20 +20,22 @@ module.exports = function(io) {
                 await userService.toggleUserAvailability(emoji);
                 let updatedUsers = await userService.getUsers();
                 let currentCalls = await callService.getCalls();
-                await loggingService.insertRow([new Date().toISOString(), 'hideFan', emoji]);
                 io.emit('users', { users: updatedUsers, calls: currentCalls });
+                await loggingService.insertRow([new Date().toISOString(), emoji, 'hide/open fan']);
             });
 
             socket.on('userSignedIn', async (emoji) => {
                 await userService.updateUserSignedInStatus(emoji, true);
                 let updatedUsers = await userService.getUsers();
                 io.emit('onlineUsers', updatedUsers);
+                await loggingService.insertRow([new Date().toISOString(), emoji, 'sign in']);
             });
 
             socket.on('callUser', async (data) => {
                 await callService.addCall(data.callerId, data.idToCall, data.timeslot);
                 currentCalls = await callService.getCalls();
                 io.emit('newCall', currentCalls);
+                await loggingService.insertRow([new Date().toISOString(), data.callerId, 'call', data.idToCall]);
             });
         } catch (err) {
             console.error('Error in connection handler:', err);
