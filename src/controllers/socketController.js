@@ -1,5 +1,6 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
+const loggingService = require('../services/loggingService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
@@ -19,6 +20,7 @@ module.exports = function(io) {
                 await userService.toggleUserAvailability(emoji);
                 let updatedUsers = await userService.getUsers();
                 let currentCalls = await callService.getCalls();
+                await loggingService.insertRow([new Date().toISOString(), 'hideFan', emoji]);
                 io.emit('users', { users: updatedUsers, calls: currentCalls });
             });
 
