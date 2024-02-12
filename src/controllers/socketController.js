@@ -37,6 +37,11 @@ module.exports = function(io) {
                 io.emit('newCall', currentCalls);
                 await loggingService.insertRow([new Date().toISOString(), data.callerId, 'call', data.idToCall]);
             });
+
+            socket.on('peerId', (data) => {
+                console.log(`Peer ID received: ${data.peerId} for user: ${data.emoji}`);
+            });
+
         } catch (err) {
             console.error('Error in connection handler:', err);
         }

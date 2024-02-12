@@ -18,11 +18,13 @@ const io = require('socket.io')(server, socketConfig);
 require('./controllers/socketController')(io);
 
 const peerServer = ExpressPeerServer(server, {
+  proxied: true,
   debug: true,
   path: "/myapp",
+  ssl: {},
 });
 
-app.use('/peerjs', peerServer);
+app.use(peerServer);
 app.use(express.static(path.join(__dirname)));
 
 server.listen(PORT, () => {
