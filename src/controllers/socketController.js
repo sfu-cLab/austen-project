@@ -1,19 +1,23 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
 const loggingService = require('../services/loggingService');
+const peerService = require('../services/peerService');
+
+var emojisToPeerIds = {};
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
-        console.log('A user connected: ', socket.id); // TODO log user emoji because socket.id is different each time
+        console.log('User connected');
 
         try {
             let users = await userService.getUsers();
             let currentCalls = await callService.getCalls();
             io.emit('users', { users: users, calls: currentCalls });
             io.emit('newCall', currentCalls);
+            await peerService.checkTimeslots();
 
-            socket.on('clientDisconnecting', () => {
-                console.log('A user disconnected');
+            socket.on('clientDisconnecting', async (emoji) => {
+                console.log('User disconnected: ' + emoji);
             });
 
             socket.on('hideFan', async (emoji) => {
@@ -39,7 +43,8 @@ module.exports = function(io) {
             });
 
             socket.on('peerId', (data) => {
-                console.log(`Peer ID received: ${data.peerId} for user: ${data.emoji}`);
+                emojisToPeerIds[data.emoji] = data.peerId;
+                console.log(emojisToPeerIds);
             });
 
         } catch (err) {

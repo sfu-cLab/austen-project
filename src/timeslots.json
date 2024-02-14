@@ -1,36 +1,44 @@
 {
    "timeslots": [
     {
-        "start": "9:00",
-        "end": "9:15"
+        "start": "11:00",
+        "end": "11:15",
+        "timeslot": 1
     },
     {
-        "start": "9:15",
-        "end": "9:30"
+        "start": "11:15",
+        "end": "11:30",
+        "timeslot": 2
     },
     {
-        "start": "9:30",
-        "end": "9:45"
+        "start": "11:30",
+        "end": "11:45",
+        "timeslot": 3
     },
     {
-        "start": "9:45",
-        "end": "10:00"
+        "start": "11:45",
+        "end": "12:00",
+        "timeslot": 4
     },
     {
-        "start": "10:00",
-        "end": "10:15"
+        "start": "12:00",
+        "end": "12:15",
+        "timeslot": 5
     },
     {
-        "start": "10:15",
-        "end": "10:30"
+        "start": "12:15",
+        "end": "12:30",
+        "timeslot": 6
     },
     {
-        "start": "10:30",
-        "end": "10:45"
+        "start": "12:30",
+        "end": "12:45",
+        "timeslot": 7
     },
     {
-        "start": "10:45",
-        "end": "11:00"
+        "start": "12:45",
+        "end": "1:00",
+        "timeslot": 8
     }
    ]
 }

@@ -22,7 +22,8 @@ async function getCalls() {
 }
 
 async function getScheduledCalls() {
-    return await fsUtils.readJsonFile(timeslotPath);
+    let timeslots = await fsUtils.readJsonFile(timeslotPath);
+    return JSON.stringify(timeslots);
 }
 
 module.exports = {
