@@ -11,7 +11,7 @@ module.exports = function(io) {
         let calls = await callService.getCalls();
         let currentTimeslot = timeslot.timeslot;
         let currentCalls = calls[currentTimeslot] || [];
-        console.log('Current calls:', currentCalls);
+        io.emit('startCall', currentCalls);
     });
     
     io.on('connection', async (socket) => {
