@@ -11,7 +11,16 @@ module.exports = function(io) {
         let calls = await callService.getCalls();
         let currentTimeslot = timeslot.timeslot;
         let currentCalls = calls[currentTimeslot] || [];
-        io.emit('startCall', currentCalls);
+        console.log(emojisToPeerIds);
+        let callsEmojistoPeerIds = currentCalls.map(call => {
+            return {
+                id1: call.id1,
+                id2: call.id2,
+                peerId1: emojisToPeerIds[call.id1],
+                peerId2: emojisToPeerIds[call.id2],
+            };
+        });
+        io.emit('startCall', callsEmojistoPeerIds);
     });
     
     io.on('connection', async (socket) => {
