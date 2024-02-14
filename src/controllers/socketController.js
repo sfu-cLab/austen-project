@@ -1,11 +1,19 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
 const loggingService = require('../services/loggingService');
-const peerService = require('../services/peerService');
+const schedulingService = require('../services/schedulingService');
 
 var emojisToPeerIds = {};
 
 module.exports = function(io) {
+    schedulingService.checkTimeslotsObservable().subscribe(async (timeslot) => {
+        console.log('Timeslot:', timeslot);
+        let calls = await callService.getCalls();
+        let currentTimeslot = timeslot.timeslot;
+        let currentCalls = calls[currentTimeslot] || [];
+        console.log('Current calls:', currentCalls);
+    });
+    
     io.on('connection', async (socket) => {
         console.log('User connected');
 
@@ -14,7 +22,6 @@ module.exports = function(io) {
             let currentCalls = await callService.getCalls();
             io.emit('users', { users: users, calls: currentCalls });
             io.emit('newCall', currentCalls);
-            await peerService.checkTimeslots();
 
             socket.on('clientDisconnecting', async (emoji) => {
                 console.log('User disconnected: ' + emoji);
