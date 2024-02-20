@@ -2,6 +2,7 @@ const userService = require('../services/userService');
 const callService = require('../services/callService');
 const loggingService = require('../services/loggingService');
 const schedulingService = require('../services/schedulingService');
+const { fail } = require('assert');
 
 var emojisToPeerIds = {};
 
@@ -20,6 +21,26 @@ module.exports = function(io) {
                 peerId2: emojisToPeerIds[call.id2],
             };
         });
+
+        successCalls = callsEmojistoPeerIds.filter(call => call.peerId1 && call.peerId2);
+        failCalls = callsEmojistoPeerIds.filter(call => !call.peerId1 || !call.peerId2);
+
+        const users = await userService.getUsers();
+        // check if successCalls are available
+        successCalls = successCalls.filter(call => users.find(user => user.emoji === call.id1).isAvailable && users.find(user => user.emoji === call.id2).isAvailable);
+        userUnavailable = successCalls.filter(call => !users.find(user => user.emoji === call.id1).isAvailable || !users.find(user => user.emoji === call.id2).isAvailable);
+
+        if (failCalls.length > 0) {
+            await loggingService.insertRow([new Date().toISOString(), 'system', 'failed call (user offline)', JSON.stringify(failCalls)]);
+        }
+        if (successCalls.length > 0) {
+            await loggingService.insertRow([new Date().toISOString(), 'system', 'success call', JSON.stringify(successCalls)]);
+            io.emit('startCall', successCalls);
+        }
+        if (userUnavailable.length > 0) {
+            await loggingService.insertRow([new Date().toISOString(), 'system', 'user closed fan prior to call', JSON.stringify(userUnavailable)]);
+        }
+
         io.emit('startCall', callsEmojistoPeerIds);
     });
     
