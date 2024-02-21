@@ -1,31 +1,15 @@
-const { google } = require('googleapis');
-require('dotenv').config();
-
-const auth = new google.auth.GoogleAuth({
-    keyFile: 'credentials.json',
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-});
-
-const sheets = google.sheets({ version: 'v4', auth });
-
-const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+const fs = require('fs');
+const path = require('path');
 
 async function insertRow(data) {
     try {
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: spreadsheetId,
-            range: 'Sheet1',
-            valueInputOption: 'USER_ENTERED',
-            resource: {
-                values: [data],
-            },
-        });
-        
+        const csvFile = path.join(path.resolve(__dirname, '..'), 'logs.csv');
+        const dataStr = data.join(',') + '\n';
+        fs.appendFileSync(csvFile, dataStr);
     } catch (err) {
         console.error('Error in insertRow:', err);
     }
 }
-
 module.exports = {
     insertRow,
 };
