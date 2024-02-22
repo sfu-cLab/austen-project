@@ -1,98 +1,44 @@
 [
-  {
-    "name": "Jane",
-    "emoji": "🌼",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": true
-  },
-  {
-    "name": "Mary",
-    "emoji": "🐈",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": false
-  },
-  {
-    "name": "Bob",
-    "emoji": "📘",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": false
-  },
-  {
-    "name": "Daniel",
-    "emoji": "🌲",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": false
-  },
-  {
-    "name": "Marcus",
-    "emoji": "🌰",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": false
-  },
-  {
-    "name": "Linda",
-    "emoji": "🦆",
-    "schedule": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "isAvailable": true,
-    "isSignedIn": false
-  }
+	{
+		"name": "Jane",
+		"emoji": "🌼",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	},
+	{
+		"name": "Mary",
+		"emoji": "🐈",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	},
+	{
+		"name": "Bob",
+		"emoji": "📘",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	},
+	{
+		"name": "Daniel",
+		"emoji": "🌲",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	},
+	{
+		"name": "Marcus",
+		"emoji": "🌰",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	},
+	{
+		"name": "Linda",
+		"emoji": "🦆",
+		"schedule": [1, 2, 3, 4, 5, 6, 7, 8],
+		"isAvailable": true,
+		"isSignedIn": false
+	}
 ]
