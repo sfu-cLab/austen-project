@@ -2,90 +2,71 @@ const userService = require('../services/userService');
 const callService = require('../services/callService');
 const loggingService = require('../services/loggingService');
 const schedulingService = require('../services/schedulingService');
-const { fail } = require('assert');
-
-var emojisToPeerIds = {};
 
 module.exports = function(io) {
     schedulingService.checkTimeslotsObservable().subscribe(async (timeslot) => {
         console.log('Timeslot:', timeslot);
-        let calls = await callService.getCalls();
-        let currentTimeslot = timeslot.timeslot;
-        let currentCalls = calls[currentTimeslot] || [];
-        console.log(emojisToPeerIds);
-        let callsEmojistoPeerIds = currentCalls.map(call => {
-            return {
-                id1: call.id1,
-                id2: call.id2,
-                peerId1: emojisToPeerIds[call.id1],
-                peerId2: emojisToPeerIds[call.id2],
-            };
+
+        // TODO end previous call 
+        if (timeslot > 1) {
+            const prevTimeslot = timeslot - 1;
+
+        }
+        const allCalls = await callService.getCalls();
+        // filter calls that have the current timeslot
+        const currentCalls = allCalls[timeslot.timeslot.toString()];
+        console.log('Current calls:', currentCalls);
+
+        // get the socketId of the callerEmoji and send it the peerId of the calleeEmoji
+        if (currentCalls && currentCalls.length > 0) {
+            const users = await userService.getUsers();
+
+            currentCalls.forEach(async (call) => {
+                const callerSocketId = users.find(user => user.emoji === call.callerEmoji).socketId;
+                const calleePeerId = users.find(user => user.emoji === call.calleeEmoji).peerId;
+
+                // emit only to the caller
+                io.to(callerSocketId).emit('callPeer', { peerId: calleePeerId });
+            });
+        }
+
+    });
+
+    io.on('connection', async (socket) => {
+        console.log('User connected with socket id: ' + socket.id);
+        const users = await userService.getUsers();
+        const currentCalls = await callService.getCalls();
+        io.emit('users', { users: users, calls: currentCalls });
+        io.emit('newCall', currentCalls);
+
+        socket.on('registerUser', async (data) => {
+            const { peerId, emoji } = data;
+            await userService.updatePeerId(emoji, peerId);
+            await userService.updateSocketId(emoji, socket.id);
+            console.log(`Registered new user: ${emoji} with peerId: ${peerId} and socketId: ${socket.id}`);
         });
 
-        successCalls = callsEmojistoPeerIds.filter(call => call.peerId1 && call.peerId2);
-        failCalls = callsEmojistoPeerIds.filter(call => !call.peerId1 || !call.peerId2);
+        socket.on('disconnect', async () => {
+            const users = await userService.getUsers();
+            const userIndex = users.findIndex(user => user.socketId === socket.id);
+            if (userIndex !== -1) {
+                await userService.updateSocketId(users[userIndex].emoji, null);
+                console.log(`User ${users[userIndex].emoji} has disconnected`);
+            }
+        });
 
-        const users = await userService.getUsers();
-        // check if successCalls are available
-        successCalls = successCalls.filter(call => users.find(user => user.emoji === call.id1).isAvailable && users.find(user => user.emoji === call.id2).isAvailable);
-        userUnavailable = successCalls.filter(call => !users.find(user => user.emoji === call.id1).isAvailable || !users.find(user => user.emoji === call.id2).isAvailable);
+        socket.on('toggleFan', async () => {
+            await userService.toggleUserAvailability(socket.id);
+            const users = await userService.getUsers();
+            const calls = await callService.getCalls();
+            io.emit('users', { users: users, calls: calls });
+        });
 
-        if (failCalls.length > 0) {
-            await loggingService.insertRow([new Date().toISOString(), 'system', 'failed call (user offline)', JSON.stringify(failCalls)]);
-        }
-        if (successCalls.length > 0) {
-            await loggingService.insertRow([new Date().toISOString(), 'system', 'success call', JSON.stringify(successCalls)]);
-            io.emit('startCall', successCalls);
-        }
-        if (userUnavailable.length > 0) {
-            await loggingService.insertRow([new Date().toISOString(), 'system', 'user closed fan prior to call', JSON.stringify(userUnavailable)]);
-        }
-
-        io.emit('startCall', callsEmojistoPeerIds);
-    });
-    
-    io.on('connection', async (socket) => {
-        console.log('User connected');
-
-        try {
-            let users = await userService.getUsers();
-            let currentCalls = await callService.getCalls();
-            io.emit('users', { users: users, calls: currentCalls });
+        socket.on('callUser', async (data) => {
+            await callService.addCall(data.callerEmoji, data.calleeEmoji, data.timeslot);
+            const currentCalls = await callService.getCalls();
             io.emit('newCall', currentCalls);
-
-            socket.on('clientDisconnecting', async (emoji) => {
-                console.log('User disconnected: ' + emoji);
-            });
-
-            socket.on('hideFan', async (emoji) => {
-                await userService.toggleUserAvailability(emoji);
-                let updatedUsers = await userService.getUsers();
-                let currentCalls = await callService.getCalls();
-                io.emit('users', { users: updatedUsers, calls: currentCalls });
-                await loggingService.insertRow([new Date().toISOString(), emoji, 'hide/open fan']);
-            });
-
-            socket.on('userSignedIn', async (emoji) => {
-                await userService.updateUserSignedInStatus(emoji, true);
-                let updatedUsers = await userService.getUsers();
-                io.emit('onlineUsers', updatedUsers);
-                await loggingService.insertRow([new Date().toISOString(), emoji, 'sign in']);
-            });
-
-            socket.on('callUser', async (data) => {
-                await callService.addCall(data.callerId, data.idToCall, data.timeslot);
-                currentCalls = await callService.getCalls();
-                io.emit('newCall', currentCalls);
-                await loggingService.insertRow([new Date().toISOString(), data.callerId, 'call', data.idToCall]);
-            });
-
-            socket.on('peerId', (data) => {
-                emojisToPeerIds[data.emoji] = data.peerId;
-                console.log(emojisToPeerIds);
-            });
-
-        } catch (err) {
-            console.error('Error in connection handler:', err);
-        }
+            await loggingService.insertRow([new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
+        });
     });
 };
