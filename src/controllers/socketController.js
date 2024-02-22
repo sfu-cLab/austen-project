@@ -5,22 +5,26 @@ const schedulingService = require('../services/schedulingService');
 
 module.exports = function(io) {
     schedulingService.checkTimeslotsObservable().subscribe(async (timeslot) => {
-        console.log('Timeslot:', timeslot);
-
-        // TODO end previous call 
-        if (timeslot > 1) {
-            const prevTimeslot = timeslot - 1;
-
-        }
         const allCalls = await callService.getCalls();
-        // filter calls that have the current timeslot
+        const users = await userService.getUsers();
+
+        if (timeslot.timeslot > 1) {
+            const prevTimeslot = timeslot.timeslot - 1;
+            const prevCalls = allCalls[prevTimeslot.toString()];
+
+            if (prevCalls && prevCalls.length > 0) {
+                prevCalls.forEach(async (call) => {
+                    const callerSocketId = users.find(user => user.emoji === call.callerEmoji).socketId;
+                    io.to(callerSocketId).emit('hangup');
+                });
+            }
+        }
+        
         const currentCalls = allCalls[timeslot.timeslot.toString()];
         console.log('Current calls:', currentCalls);
 
         // get the socketId of the callerEmoji and send it the peerId of the calleeEmoji
         if (currentCalls && currentCalls.length > 0) {
-            const users = await userService.getUsers();
-
             currentCalls.forEach(async (call) => {
                 const callerSocketId = users.find(user => user.emoji === call.callerEmoji).socketId;
                 const calleePeerId = users.find(user => user.emoji === call.calleeEmoji).peerId;
