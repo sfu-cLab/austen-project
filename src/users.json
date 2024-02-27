@@ -13,7 +13,9 @@
       8
     ],
     "isAvailable": true,
-    "isSignedIn": true
+    "isSignedIn": false,
+    "peerId": "0hc8",
+    "socketId": null
   },
   {
     "name": "Mary",
@@ -45,7 +47,9 @@
       8
     ],
     "isAvailable": true,
-    "isSignedIn": false
+    "isSignedIn": false,
+    "peerId": "2b6b",
+    "socketId": "zqUxcVnurZK2_d3-AAAR"
   },
   {
     "name": "Daniel",
