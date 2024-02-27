@@ -1,0 +1,284 @@
+* {
+	font-family: "SF Pro Display", sans-serif;
+}
+
+.piechart {
+	margin-top: 25px;
+	width: 850px;
+	height: 850px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 50%;
+	position: relative;
+}
+
+.center-bar {
+	position: absolute;
+	width: 25px;
+	height: 100%;
+	top: 0;
+	left: 50%;
+	z-index: 15;
+}
+
+#bar1 {
+	transform: translateX(-120%);
+	background-color: white;
+	border: 5px solid black;
+	z-index: 50;
+}
+
+#bar2 {
+	transform: translateX(-30%);
+	background-color: white;
+	border: 5px solid black;
+	z-index: 50;
+}
+
+.pie-slice {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	border-radius: 50%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: white;
+	border: 2px solid black;
+}
+
+#slice1 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(0deg);
+}
+
+#slice2 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(22.5deg);
+}
+
+#slice3 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(45deg);
+}
+
+#slice4 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(67.5deg);
+}
+
+#slice5 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(90deg);
+}
+
+#slice6 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(112.5deg);
+}
+
+#slice7 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(135deg);
+}
+
+#slice8 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(157.5deg);
+}
+
+#slice9 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(180deg);
+}
+
+#slice10 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(202.5deg);
+}
+
+#slice11 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(225deg);
+}
+
+#slice12 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(247.5deg);
+}
+
+#slice13 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(270deg);
+}
+
+#slice14 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(292.5deg);
+}
+
+#slice15 {
+	background: conic-gradient(white 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(315deg);
+}
+
+#slice16 {
+	background: conic-gradient(#d2b48c 0deg 22.5deg, transparent 22.5deg 360deg);
+	clip-path: polygon(50% 50%, 0 0, 100% 0);
+	transform: rotate(337.5deg);
+}
+
+.emoji {
+	font-size: 15px;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	border-radius: 50%;
+	background-color: white;
+	border: 2px solid black;
+	z-index: 20;
+    margin-inline: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	display: none;
+	z-index: 130;
+	justify-content: center;
+	align-items: center;
+}
+
+.modal {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+}
+
+.modal-content {
+	background-color: #fefefe;
+	margin: 15% auto;
+	padding: 20px;
+	border: 1px solid #888;
+	width: 80%;
+}
+
+.close-button {
+	color: #aaa;
+	float: right;
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close-button:hover,
+.close-button:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.flex-container {
+	display: flex;
+	flex-wrap: wrap;
+	left: 75px;
+	z-index: 30;
+}
+
+.container-1 {
+	position: absolute;
+	top: 200px;
+	left: 210px;
+    transform: rotate(72.75deg);
+}
+
+.container-2 {
+	position: absolute;
+    top: 250px;
+    left: 125px;
+    transform: rotate(56.25deg);
+}
+
+.container-3 {
+    position: absolute;
+    top: 345px;
+    left: 75px;
+    transform: rotate(33.75deg)
+}
+
+.container-4 {
+    position: absolute;
+    top: 440px;
+    left: 50px;
+    transform: rotate(11.25deg);
+}
+
+.container-5 {
+    position: absolute;
+    top: 530px;
+    left: 50px;
+    transform: rotate(348.75deg);
+}
+
+.container-6 {
+    position: absolute;
+    top: 625px;
+    left: 75px;
+    transform: rotate(326.25deg);
+}
+
+.container-7 {
+    position: absolute;
+    top: 710px;
+    left: 135px;
+    transform: rotate(303.75deg);
+}
+
+.container-8 {
+    position: absolute;
+    top: 765px;
+	left: 225px;
+    transform: rotate(281.25deg);
+}
+
+/* Counter-rotate the emojis inside each container */
+.container-1 .emoji { transform: rotate(-78.75deg); }
+.container-2 .emoji { transform: rotate(-56.25deg); }
+.container-3 .emoji { transform: rotate(-33.75deg); }
+.container-4 .emoji { transform: rotate(-11.25deg); }
+.container-5 .emoji { transform: rotate(-348.75deg); }
+.container-6 .emoji { transform: rotate(-326.25deg); }
+.container-7 .emoji { transform: rotate(-303.75deg); }
+.container-8 .emoji { transform: rotate(-281.25deg); }
+
+#clockHand {
+	position: absolute;
+	background-color: red;
+	width: 2px;
+	transform-origin: bottom;
+	z-index: 20;
+}

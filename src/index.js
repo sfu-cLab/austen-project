@@ -4,7 +4,7 @@ const http = require('http');
 const socketConfig = require('./config/socketConfig');
 const routes = require('./routes');
 const { ExpressPeerServer } = require("peer");
-const path = require("path");
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 9000;
@@ -13,6 +13,13 @@ const server = http.createServer(app);
 app.use(cors());
 app.use(express.json());
 routes(app);
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/index.html'));
+});
+
 
 const io = require('socket.io')(server, socketConfig);
 require('./controllers/socketController')(io);
