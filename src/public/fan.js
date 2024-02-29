@@ -2,7 +2,7 @@ const leftBar = document.getElementById("bar1");
 const rightBar = document.getElementById("bar2");
 const allSlices = document.querySelectorAll("*");
 const welcomeElement = document.getElementById('welcomeText');
-const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? "http://localhost:9000" : "http://axtell.iat.sfu.ca:9000";
+const apiUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') ? "http://localhost:9000" : "https://axtell.iat.sfu.ca:9000";
 var currentUserEmoji = null; 
 var socket = io(apiUrl);
 
@@ -352,7 +352,7 @@ const peer = new Peer(''+Math.floor(Math.random()*2**18).toString(36).padStart(4
     debug: 1,
     path: '/myapp',
     port: 9000,
-    secure: false
+    secure: true
 });
 
 window.peer = peer;

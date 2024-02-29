@@ -1,14 +1,23 @@
 const express = require('express');
 const cors = require('cors');
-const http = require('http');
+const https = require('https');
 const socketConfig = require('./config/socketConfig');
 const routes = require('./routes');
 const { ExpressPeerServer } = require("peer");
 const path = require('path');
 
+const fs = require('fs');
+
 const app = express();
 const PORT = process.env.PORT || 9000;
-const server = http.createServer(app);
+
+let options = {
+  key: fs.readFileSync("../../../etc/letsencrypt/live/axtell.iat.sfu.ca/privkey.pem"),
+  cert: fs.readFileSync("../../../etc/letsencrypt/live/axtell.iat.sfu.ca/fullchain.pem"),
+  rejectUnauthorized: false
+}
+
+var server = https.createServer(options, app)
 
 app.use(cors());
 app.use(express.json());
@@ -28,7 +37,6 @@ const peerServer = ExpressPeerServer(server, {
   proxied: true,
   debug: true,
   path: "/myapp",
-  ssl: {},
 });
 
 app.use(peerServer);
