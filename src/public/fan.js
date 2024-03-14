@@ -50,7 +50,7 @@ fetch(`${apiUrl}/api/schedule`)
         fixedStartTime = new Date();
         fixedStartTime.setHours(startHours, startMinutes, 0, 0);        
         fixedStartTime = new Date(fixedStartTime.getTime() + fixedStartTime.getTimezoneOffset() * 60000); // Convert to UTC
-        fixedStartTime = new Date(fixedStartTime.getTime() -  * 60 * 60 * 1000); // Convert back to PST
+        fixedStartTime = new Date(fixedStartTime.getTime() - 7 * 60 * 60 * 1000); // Convert back to PST
         requestAnimationFrame(() => updateClock(fixedStartTime, durationSeconds));
     })
     .catch(error => {
