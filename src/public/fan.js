@@ -49,8 +49,9 @@ fetch(`${apiUrl}/api/schedule`)
         durationSeconds = differenceInSeconds(schedule[0].start, schedule[schedule.length - 1].end);
         fixedStartTime = new Date();
         fixedStartTime.setHours(startHours, startMinutes, 0, 0);        
+        fixedStartTime = new Date(fixedStartTime.getTime() + fixedStartTime.getTimezoneOffset() * 60000); // Convert to UTC
+        fixedStartTime = new Date(fixedStartTime.getTime() -  * 60 * 60 * 1000); // Convert back to PST
         requestAnimationFrame(() => updateClock(fixedStartTime, durationSeconds));
-        // document.getElementById('playAudio').disabled = false;
     })
     .catch(error => {
         console.error('Error fetching schedule:', error);
@@ -453,6 +454,7 @@ peer.on('connection', function(connection){
 peer.on('call', function(call) {
     call.answer(window.localStream)
     call.on('stream', function(stream) {
+        // getLocalStream();
         setRemoteStream(stream);
     });
     conn.on('close', function (){
@@ -465,4 +467,4 @@ peer.on('call', function(call) {
  */
 peer.on('error', err => console.error(err));
 
-getLocalStream();
+// getLocalStream();
