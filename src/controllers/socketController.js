@@ -22,18 +22,6 @@ module.exports = function(io) {
         
         const currentCalls = allCalls[timeslot.timeslot.toString()];
         console.log('Current calls:', currentCalls);
-
-        // get the socketId of the callerEmoji and send it the peerId of the calleeEmoji
-        if (currentCalls && currentCalls.length > 0) {
-            currentCalls.forEach(async (call) => {
-                const callerSocketId = users.find(user => user.emoji === call.callerEmoji).socketId;
-                const calleePeerId = users.find(user => user.emoji === call.calleeEmoji).peerId;
-
-                // emit only to the caller
-                io.to(callerSocketId).emit('callPeer', { peerId: calleePeerId });
-            });
-        }
-
     });
 
     io.on('connection', async (socket) => {
