@@ -60,6 +60,7 @@ function monitorTimeslots() {
 
         if (now >= startTime && now < endTime) {
             let callsData = JSON.parse(fs.readFileSync('src/calls.json', 'utf-8'));
+            let usersData = JSON.parse(fs.readFileSync('src/users.json', 'utf-8'));
             const currentCalls = callsData[timeslot.timeslot];
 
             console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${JSON.stringify(currentCalls)}`);
@@ -70,20 +71,28 @@ function monitorTimeslots() {
                 const callerId = emojiToUserIdMap[call.callerEmoji];
                 const calleeId = emojiToUserIdMap[call.calleeEmoji];
 
-                if (callCount == 0) {
-                    moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1);
+                isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji);
+                isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji);
+
+                if (isCalleeAvailable && isCallerAvailable) {
+                    if (callCount == 0) {
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1);
+                    }
+                    else if (callCount == 1) {
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_2);
+                    }
+                    else if (callCount == 2) {
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3);
+                    }
+                    callCount++;
                 }
-                else if (callCount == 1) {
-                    moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_2);
-                }
-                else if (callCount == 2) {
-                    moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3);
+                else {
+                    console.log('User is not available, call cancelled');
+                    // await loggingService.insertRow([new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'unavailable']);
                 }
 
                 const duration = (endTime.getTime() - now.getTime());
                 setTimeout(() => moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID), duration);
-
-                callCount++;
             });
         }
     });
