@@ -32,10 +32,11 @@ const emojiToUserIdMap = {
 };
 
 const timeslotsData = JSON.parse(fs.readFileSync('src/timeslots.json', 'utf-8'));
-  
+
+const LOBBY_CHANNEL_ID = '1217802796544299108';
 const VOICE_CHANNEL_ID_1 = '1217794085755289661';
 const VOICE_CHANNEL_ID_2 = '1217794115035463750';
-const VOICE_CHANNEL_ID_3 = '1217794115035463750';
+const VOICE_CHANNEL_ID_3 = '1217794155284267089';
 
 const startTime = new Date();
 
@@ -61,7 +62,7 @@ function monitorTimeslots() {
             let callsData = JSON.parse(fs.readFileSync('src/calls.json', 'utf-8'));
             const currentCalls = callsData[timeslot.timeslot];
 
-            console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${currentCalls}`);
+            console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${JSON.stringify(currentCalls)}`);
 
             var callCount = 0;
 
@@ -79,6 +80,9 @@ function monitorTimeslots() {
                     moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3);
                 }
 
+                const duration = (endTime.getTime() - now.getTime());
+                setTimeout(() => moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID), duration);
+
                 callCount++;
             });
         }
@@ -94,13 +98,31 @@ async function moveUsers(callerId, calleeId, channelId) {
         const member = await guild.members.fetch(userId);
         if (member && member.voice.channelId !== channelId) {
             member.voice.setChannel(channel)
-                .then(() => console.log(`Moved ${member.user.username} to ${channel.name}.`))
+                .then(() => console.log(`Moved ${member.user.username} to ${channel.name}`))
                 .catch(console.error);
               
             if (member.voice.serverMute) {
                 await member.voice.setMute(false);
                 console.log(`Unmuted ${member.user.username}.`);
             }
+        }
+    });
+}
+
+async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
+    const guild = client.guilds.cache.first();
+    const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
+    
+    [callerId, calleeId].forEach(async userId => {
+        try {
+            const member = await guild.members.fetch(userId);
+            if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
+                await member.voice.setChannel(lobbyChannel);
+                await member.voice.setMute(true);
+                console.log(`Moved ${member.user.username} back to the lobby.`);
+            }
+        } catch (error) {
+            console.error(`Error moving user ${userId} back to the lobby:`, error);
         }
     });
 }
