@@ -96,7 +96,7 @@ function monitorTimeslots() {
             });
         }
     });
-    setTimeout(monitorTimeslots, 5000);
+    setTimeout(monitorTimeslots, 1000);
 }
 
 async function moveUsers(callerId, calleeId, channelId) {
