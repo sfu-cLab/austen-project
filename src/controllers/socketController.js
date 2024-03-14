@@ -72,5 +72,11 @@ module.exports = function(io) {
             io.emit('newCall', currentCalls);
             await loggingService.insertRow([new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
         });
+
+        socket.on('userSignedIn', async (selectedEmoji) => {
+            await userService.updateUserSignedInStatus(selectedEmoji, true);
+            const users = await userService.getUsers();
+            io.emit('users', { users: users });
+        });
     });
 };
