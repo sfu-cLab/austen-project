@@ -47,8 +47,9 @@ module.exports = function(io) {
             }
         });
 
-        socket.on('toggleFan', async () => {
-            await userService.toggleUserAvailability(socket.id);
+        socket.on('toggleFan', async (emoji) => {
+            console.log('Toggling fan')
+            await userService.toggleUserAvailability(emoji);
             const users = await userService.getUsers();
             const calls = await callService.getCalls();
             io.emit('users', { users: users, calls: calls });

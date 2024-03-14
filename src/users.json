@@ -14,8 +14,8 @@
     ],
     "isAvailable": true,
     "isSignedIn": false,
-    "peerId": "0hc8",
-    "socketId": null
+    "peerId": "2nmh",
+    "socketId": "Toe1Qsi3ipM_kWIvAAAB"
   },
   {
     "name": "Mary",
@@ -48,8 +48,8 @@
     ],
     "isAvailable": true,
     "isSignedIn": false,
-    "peerId": "2b6b",
-    "socketId": "zqUxcVnurZK2_d3-AAAR"
+    "peerId": "259t",
+    "socketId": "Pq0oYPY7w6gQ7KuWAAAB"
   },
   {
     "name": "Daniel",
@@ -97,6 +97,8 @@
       8
     ],
     "isAvailable": true,
-    "isSignedIn": false
+    "isSignedIn": false,
+    "peerId": "0ho9",
+    "socketId": null
   }
 ]
