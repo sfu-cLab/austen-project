@@ -1,43 +1,43 @@
 {
     "timeslots": [
         {
-            "start": "11:19",
-            "end": "11:20",
+            "start": "07:10",
+            "end": "07:11",
             "timeslot": 1
         },
         {
-            "start": "11:20",
-            "end": "11:21",
+            "start": "07:11",
+            "end": "07:12",
             "timeslot": 2
         },
         {
-            "start": "11:21",
-            "end": "11:22",
+            "start": "07:12",
+            "end": "07:13",
             "timeslot": 3
         },
         {
-            "start": "11:22",
-            "end": "11:23",
+            "start": "07:13",
+            "end": "07:14",
             "timeslot": 4
         },
         {
-            "start": "11:23",
-            "end": "11:24",
+            "start": "07:14",
+            "end": "07:15",
             "timeslot": 5
         },
         {
-            "start": "11:24",
-            "end": "11:25",
+            "start": "07:15",
+            "end": "07:16",
             "timeslot": 6
         },
         {
-            "start": "11:25",
-            "end": "11:26",
+            "start": "07:16",
+            "end": "07:17",
             "timeslot": 7
         },
         {
-            "start": "11:26",
-            "end": "11:27",
+            "start": "07:17",
+            "end": "07:18",
             "timeslot": 8
         }
     ]
