@@ -18,25 +18,26 @@ const client = new Client({
 
 const token = process.env.DISCORD_BOT_TOKEN;
 
-const USER_ID_1 = '1217803633580576878';
-const USER_ID_2 = '1040442081459589130';
-const USER_ID_3 = '723677031442677811';
-const USER_ID_4 = '';
-const USER_ID_5 = '';
-const USER_ID_6 = '';
+const USER_ID_1 = process.env.USER_ID_1;
+const USER_ID_2 = process.env.USER_ID_2;
+const USER_ID_3 = process.env.USER_ID_3;
+const USER_ID_4 = process.env.USER_ID_4;
+const USER_ID_5 = process.env.USER_ID_5;
+const USER_ID_6 = process.env.USER_ID_6;
 
 const emojiToUserIdMap = {
-    "📘": USER_ID_1,
+    "🌼": USER_ID_1,
     "🦆": USER_ID_2,
-    "🌼": USER_ID_3,
+    "📘": USER_ID_3,
+    "🌲": USER_ID_4
 };
 
 const timeslotsData = JSON.parse(fs.readFileSync('src/timeslots.json', 'utf-8'));
 
-const LOBBY_CHANNEL_ID = '1217802796544299108';
-const VOICE_CHANNEL_ID_1 = '1217794085755289661';
-const VOICE_CHANNEL_ID_2 = '1217794115035463750';
-const VOICE_CHANNEL_ID_3 = '1217794155284267089';
+const LOBBY_CHANNEL_ID = process.env.LOBBY_CHANNEL_ID;
+const VOICE_CHANNEL_ID_1 = process.env.VOICE_CHANNEL_ID_1;
+const VOICE_CHANNEL_ID_2 = process.env.VOICE_CHANNEL_ID_2;
+const VOICE_CHANNEL_ID_3 = process.env.VOICE_CHANNEL_ID_3;
 
 const startTime = new Date();
 
