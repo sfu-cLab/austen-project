@@ -1,7 +1,6 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
 const loggingService = require('../services/loggingService');
-const schedulingService = require('../services/schedulingService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
@@ -13,7 +12,8 @@ module.exports = function(io) {
         
         socket.on('disconnect', async () => {
             const users = await userService.getUsers();
-            // TODO: udpate
+            console.log('DISCONNECT')
+            // TODO: update
             // const userIndex = users.findIndex(user => user.socketId === socket.id);
             // if (userIndex !== -1) {
             //     await userService.updateSocketId(users[userIndex].emoji, null);
