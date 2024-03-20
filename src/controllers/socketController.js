@@ -30,14 +30,7 @@ module.exports = function(io) {
         const currentCalls = await callService.getCalls();
         io.emit('users', { users: users, calls: currentCalls });
         io.emit('newCall', currentCalls);
-
-        socket.on('registerUser', async (data) => {
-            const { peerId, emoji } = data;
-            await userService.updatePeerId(emoji, peerId);
-            await userService.updateSocketId(emoji, socket.id);
-            console.log(`Registered new user: ${emoji} with peerId: ${peerId} and socketId: ${socket.id}`);
-        });
-
+        
         socket.on('disconnect', async () => {
             const users = await userService.getUsers();
             const userIndex = users.findIndex(user => user.socketId === socket.id);
