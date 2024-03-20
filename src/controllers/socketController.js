@@ -4,26 +4,6 @@ const loggingService = require('../services/loggingService');
 const schedulingService = require('../services/schedulingService');
 
 module.exports = function(io) {
-    schedulingService.checkTimeslotsObservable().subscribe(async (timeslot) => {
-        const allCalls = await callService.getCalls();
-        const users = await userService.getUsers();
-
-        if (timeslot.timeslot > 1) {
-            const prevTimeslot = timeslot.timeslot - 1;
-            const prevCalls = allCalls[prevTimeslot.toString()];
-
-            if (prevCalls && prevCalls.length > 0) {
-                prevCalls.forEach(async (call) => {
-                    const callerSocketId = users.find(user => user.emoji === call.callerEmoji).socketId;
-                    io.to(callerSocketId).emit('hangup');
-                });
-            }
-        }
-        
-        const currentCalls = allCalls[timeslot.timeslot.toString()];
-        console.log('Current calls:', currentCalls);
-    });
-
     io.on('connection', async (socket) => {
         console.log('User connected with socket id: ' + socket.id);
         const users = await userService.getUsers();
@@ -33,11 +13,12 @@ module.exports = function(io) {
         
         socket.on('disconnect', async () => {
             const users = await userService.getUsers();
-            const userIndex = users.findIndex(user => user.socketId === socket.id);
-            if (userIndex !== -1) {
-                await userService.updateSocketId(users[userIndex].emoji, null);
-                console.log(`User ${users[userIndex].emoji} has disconnected`);
-            }
+            // TODO: udpate
+            // const userIndex = users.findIndex(user => user.socketId === socket.id);
+            // if (userIndex !== -1) {
+            //     await userService.updateSocketId(users[userIndex].emoji, null);
+            //     console.log(`User ${users[userIndex].emoji} has disconnected`);
+            // }
         });
 
         socket.on('toggleFan', async (emoji) => {
