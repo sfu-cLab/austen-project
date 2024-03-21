@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const https = require('https');
-const socketConfig = require('./config/socketConfig');
 const routes = require('./routes');
 const path = require('path');
 const fs = require('fs');
@@ -161,7 +160,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-const io = require('socket.io')(server, socketConfig);
+const io = require('socket.io')(server);
 require('./controllers/socketController')(io);
 
 app.use(express.static(path.join(__dirname)));
