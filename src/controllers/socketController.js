@@ -1,6 +1,6 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
-const loggingService = require('../services/loggingService');
+const logEmitter = require('../utils/eventEmitter');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
@@ -28,7 +28,7 @@ module.exports = function(io) {
             await callService.addCall(data.callerEmoji, data.calleeEmoji, data.timeslot);
             const currentCalls = await callService.getCalls();
             io.emit('newCall', currentCalls);
-            await loggingService.insertRow([new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
+            logEmitter.emit('log', [new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
         });
 
         socket.on('userSignedIn', async (selectedEmoji) => {
