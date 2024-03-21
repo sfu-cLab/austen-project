@@ -13,12 +13,7 @@ module.exports = function(io) {
         socket.on('disconnect', async () => {
             const users = await userService.getUsers();
             console.log('DISCONNECT')
-            // TODO: update
-            // const userIndex = users.findIndex(user => user.socketId === socket.id);
-            // if (userIndex !== -1) {
-            //     await userService.updateSocketId(users[userIndex].emoji, null);
-            //     console.log(`User ${users[userIndex].emoji} has disconnected`);
-            // }
+            // TODO: write to log
         });
 
         socket.on('toggleFan', async (emoji) => {
