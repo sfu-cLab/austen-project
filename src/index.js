@@ -6,7 +6,6 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
-// discord setup and logic
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
     intents: [
@@ -138,7 +137,6 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
 
 client.login(token);
 
-// server setup - express, sockets, certs
 const app = express();
 const PORT = 443;
 
