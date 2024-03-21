@@ -1,13 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const https = require('https');
-const socketConfig = require('./config/socketConfig');
 const routes = require('./routes');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 
-// discord setup and logic
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
     intents: [
@@ -139,7 +137,6 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
 
 client.login(token);
 
-// server setup - express, sockets, certs
 const app = express();
 const PORT = 443;
 
@@ -161,7 +158,7 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public/index.html'));
 });
 
-const io = require('socket.io')(server, socketConfig);
+const io = require('socket.io')(server);
 require('./controllers/socketController')(io);
 
 app.use(express.static(path.join(__dirname)));
