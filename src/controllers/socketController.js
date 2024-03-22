@@ -9,12 +9,6 @@ module.exports = function(io) {
         const currentCalls = await callService.getCalls();
         io.emit('users', { users: users, calls: currentCalls });
         io.emit('newCall', currentCalls);
-        
-        socket.on('disconnect', async () => {
-            const users = await userService.getUsers();
-            console.log('DISCONNECT')
-            // TODO: write to log
-        });
 
         socket.on('toggleFan', async (emoji) => {
             console.log('Toggling fan')
