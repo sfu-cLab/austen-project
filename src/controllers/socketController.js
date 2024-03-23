@@ -13,11 +13,12 @@ module.exports = function(io) {
 
         socket.on('toggleFan', async (emoji) => {
             console.log('Toggling fan');
-            eventEmitter.emit('log', [new Date().toISOString(), emoji, 'Toggled fan']);
             await userService.toggleUserAvailability(emoji);
             const users = await userService.getUsers();
             const calls = await callService.getCalls();
             io.emit('users', { users: users, calls: calls });
+            var message = users.find(user => user.emoji === emoji).isAvailable ? 'Opened fan' : 'Closed fan';
+            eventEmitter.emit('log', [new Date().toISOString(), emoji, message]);
         });
 
         socket.on('callUser', async (data) => {
