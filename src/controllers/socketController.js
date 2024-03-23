@@ -1,6 +1,7 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
-const logEmitter = require('../utils/eventEmitter');
+const eventEmitter = require('../utils/eventEmitter');
+require('../services/loggingService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
@@ -11,7 +12,8 @@ module.exports = function(io) {
         io.emit('newCall', currentCalls);
 
         socket.on('toggleFan', async (emoji) => {
-            console.log('Toggling fan')
+            console.log('Toggling fan');
+            eventEmitter.emit('log', [new Date().toISOString(), emoji, 'Toggled fan']);
             await userService.toggleUserAvailability(emoji);
             const users = await userService.getUsers();
             const calls = await callService.getCalls();
@@ -22,7 +24,7 @@ module.exports = function(io) {
             await callService.addCall(data.callerEmoji, data.calleeEmoji, data.timeslot);
             const currentCalls = await callService.getCalls();
             io.emit('newCall', currentCalls);
-            logEmitter.emit('log', [new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
+            eventEmitter.emit('log', [new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
         });
 
         socket.on('userSignedIn', async (selectedEmoji) => {

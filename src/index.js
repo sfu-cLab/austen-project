@@ -5,7 +5,7 @@ const routes = require('./routes');
 const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
-const logEmitter = require('./utils/eventEmitter');
+const eventEmitter = require('./utils/eventEmitter');
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
@@ -75,7 +75,7 @@ function monitorTimeslots() {
                 isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji);
 
                 if (isCalleeAvailable && isCallerAvailable) {
-                    logEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'Starting call']);
+                    // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'Starting call']);
                     if (callCount == 0) {
                         moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1);
                     }
@@ -89,7 +89,7 @@ function monitorTimeslots() {
                 }
                 else {
                     console.log('User is not available, call cancelled');
-                    logEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'User not available']);
+                    // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'User not available']);
                 }
 
                 const duration = (endTime.getTime() - now.getTime());
@@ -129,7 +129,7 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
             if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
                 await member.voice.setChannel(lobbyChannel);
                 await member.voice.setMute(true);
-                logEmitter.emit('log', [new Date().toISOString(), member.user.username, 'Moved back to lobby']);
+                // eventEmitter.emit('log', [new Date().toISOString(), member.user.username, 'Moved back to lobby']);
                 console.log(`Moved ${member.user.username} back to the lobby.`);
             }
         } catch (error) {

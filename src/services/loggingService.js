@@ -1,10 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+const eventEmitter = require('../utils/eventEmitter');
 
-const myEmitter = require('../utils/eventEmitter');
-
-myEmitter.on('log', (data) => {
-    console.log('log event emitted');
+eventEmitter.on('log', (data) => {
+    console.log('Log event emitted');
     try {
         insertRow(data);
     }
