@@ -75,6 +75,7 @@ function monitorTimeslots() {
                 isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji);
 
                 if (isCalleeAvailable && isCallerAvailable) {
+                    // TODO: Add logging
                     // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'Starting call']);
                     if (callCount == 0) {
                         moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1);
@@ -89,6 +90,7 @@ function monitorTimeslots() {
                 }
                 else {
                     console.log('User is not available, call cancelled');
+                    // TODO: Add logging
                     // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'User not available']);
                 }
 
@@ -101,13 +103,15 @@ function monitorTimeslots() {
 }
 
 async function moveUsers(callerId, calleeId, channelId) {
+    const userIds = [callerId, calleeId];
     const guild = client.guilds.cache.first();
     const channel = await guild.channels.fetch(channelId);
+    let usersInCall = [];
     
-    [callerId, calleeId].forEach(async userId => {
+    for (const userId of userIds) {
         const member = await guild.members.fetch(userId);
         if (member && member.voice.channelId !== channelId) {
-            member.voice.setChannel(channel)
+            await member.voice.setChannel(channel)
                 .then(() => console.log(`Moved ${member.user.username} to ${channel.name}`))
                 .catch(console.error);
               
@@ -115,8 +119,13 @@ async function moveUsers(callerId, calleeId, channelId) {
                 await member.voice.setMute(false);
                 console.log(`Unmuted ${member.user.username}.`);
             }
+            usersInCall.push(member.user.username);
         }
-    });
+    };
+
+    if (usersInCall.length > 0) {
+        console.log(`Users in call: ${usersInCall.join(', ')}`);
+    }
 }
 
 async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
