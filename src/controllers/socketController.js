@@ -25,7 +25,7 @@ module.exports = function(io) {
             await callService.addCall(data.callerEmoji, data.calleeEmoji, data.timeslot);
             const currentCalls = await callService.getCalls();
             io.emit('newCall', currentCalls);
-            eventEmitter.emit('log', [new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
+            eventEmitter.emit('log', [new Date().toISOString(), 'Call initiated by ' + data.callerEmoji + ' to ' + data.calleeEmoji + ' at timeslot ' + data.timeslot]);
         });
 
         socket.on('userSignedIn', async (selectedEmoji) => {
