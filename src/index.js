@@ -88,8 +88,18 @@ function monitorTimeslots() {
                 }
                 else {
                     console.log('User is not available, call cancelled');
-                    // TODO: Add logging
-                    // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'User not available']);
+                    let logMessage = '';
+                    if (!isCalleeAvailable && !isCallerAvailable) {
+                        logMessage = 'Both ' + call.callerEmoji + ' and ' + call.calleeEmoji + ' have their fan closed';
+                    }
+                    else if (!isCalleeAvailable) {
+                        logMessage = call.callerEmoji + ' has their fan closed';
+                    }
+                    else if (!isCallerAvailable) {
+                        logMessage = call.calleeEmoji + ' has their fan closed';
+                    }
+
+                    eventEmitter.emit('log', [new Date().toISOString(), 'Scheduled call not started, reason: ' + logMessage]);
                 }
 
                 const duration = (endTime.getTime() - now.getTime());
