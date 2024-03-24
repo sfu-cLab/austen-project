@@ -142,6 +142,7 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
             if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
                 await member.voice.setChannel(lobbyChannel);
                 await member.voice.setMute(true);
+                // TODO: add logging
                 // eventEmitter.emit('log', [new Date().toISOString(), member.user.username, 'Moved back to lobby']);
                 console.log(`Moved ${member.user.username} back to the lobby.`);
             }
