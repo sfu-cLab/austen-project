@@ -45,6 +45,8 @@ client.once('ready', () => {
     monitorTimeslots();
 });
 
+let eventEmitted = false;
+
 function monitorTimeslots() {
     const now = new Date();
     console.log(now.getHours(), now.getMinutes());
@@ -71,8 +73,8 @@ function monitorTimeslots() {
                 const callerId = emojiToUserIdMap[call.callerEmoji];
                 const calleeId = emojiToUserIdMap[call.calleeEmoji];
 
-                isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji);
-                isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji);
+                isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji).isAvailable;
+                isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji).isAvailable;
 
                 if (isCalleeAvailable && isCallerAvailable) {
                     if (callCount == 0) {
@@ -99,11 +101,14 @@ function monitorTimeslots() {
                         logMessage = call.calleeEmoji + ' has their fan closed';
                     }
 
-                    eventEmitter.emit('log', [new Date().toISOString(), 'Scheduled call not started, reason: ' + logMessage]);
+                    if (!eventEmitted) {
+                        eventEmitter.emit('log', [new Date().toISOString(), 'Scheduled call not started, reason: ' + logMessage]);
+                        eventEmitted = true;
+                    }
                 }
 
                 const duration = (endTime.getTime() - now.getTime());
-                setTimeout(() => moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID), duration);
+                setTimeout(() => moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID), duration); // TODO: add logging for call ending
             });
         }
     });
@@ -152,7 +157,7 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
             if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
                 await member.voice.setChannel(lobbyChannel);
                 await member.voice.setMute(true);
-                // TODO: add logging
+                // TODO: add logging for call ending
                 // eventEmitter.emit('log', [new Date().toISOString(), member.user.username, 'Moved back to lobby']);
                 console.log(`Moved ${member.user.username} back to the lobby.`);
             }
