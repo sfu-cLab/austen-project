@@ -75,16 +75,14 @@ function monitorTimeslots() {
                 isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji);
 
                 if (isCalleeAvailable && isCallerAvailable) {
-                    // TODO: Add logging
-                    // eventEmitter.emit('log', [new Date().toISOString(), call.callerEmoji, call.calleeEmoji, timeslot.timeslot, 'Starting call']);
                     if (callCount == 0) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1);
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1, timeslot.timeslot);
                     }
                     else if (callCount == 1) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_2);
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_2, timeslot.timeslot);
                     }
                     else if (callCount == 2) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3);
+                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3, timeslot.timeslot);
                     }
                     callCount++;
                 }
@@ -102,7 +100,7 @@ function monitorTimeslots() {
     setTimeout(monitorTimeslots, 1000);
 }
 
-async function moveUsers(callerId, calleeId, channelId) {
+async function moveUsers(callerId, calleeId, channelId, timeslot) {
     const userIds = [callerId, calleeId];
     const guild = client.guilds.cache.first();
     const channel = await guild.channels.fetch(channelId);
@@ -122,9 +120,15 @@ async function moveUsers(callerId, calleeId, channelId) {
             usersInCall.push(member.user.username);
         }
     };
+    // get emojis of users in call
+    callerUsername = usersInCall[0];
+    calleeUsername = usersInCall[1];
+    callerEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === callerId);
+    calleeEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === calleeId);
+
 
     if (usersInCall.length > 0) {
-        console.log(`Users in call: ${usersInCall.join(', ')}`);
+        eventEmitter.emit('log', [new Date().toISOString(), 'Starting call between ', callerEmoji + ' and ' + calleeEmoji + ' at timeslot ' + timeslot]);
     }
 }
 
