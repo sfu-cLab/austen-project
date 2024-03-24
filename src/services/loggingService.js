@@ -10,7 +10,7 @@ eventEmitter.on('log', (data) => {
     catch (err) {
         console.error('Error in log event:', err);
     }
-})
+});
 
 function insertRow(data) {
     try {
