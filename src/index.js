@@ -85,6 +85,17 @@ function monitorTimeslots() {
                         moveUsers(callerId, calleeId, channelId, timeslot.timeslot);
                     } else {
                         console.log('User is not available, call cancelled');
+                        let reason = '';
+                        if (!isCalleeAvailable && !isCallerAvailable) {
+                            reason = `${call.callerEmoji} and ${call.calleeEmoji} both have their fans closed`;
+                        }
+                        else if (!isCalleeAvailable) {
+                            reason = `${call.calleeEmoji} has their fan closed`;
+                        }
+                        else if (!isCallerAvailable) {
+                            reason = `${call.callerEmoji} has their fan closed`;
+                        }
+                        eventEmitter.emit('log', [new Date().toISOString(), 'User is not available, call cancelled, reason: ', reason]);
                     }
 
                     const duration = endTime.getTime() - now.getTime();
