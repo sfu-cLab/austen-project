@@ -46,14 +46,13 @@ client.once('ready', () => {
     monitorTimeslots();
 });
 
-let eventEmitted = false;
+let activeCalls = new Map();
 
 function monitorTimeslots() {
     const now = new Date();
     console.log(now.getHours(), now.getMinutes());
     console.log(`Checking timeslots at ${now.toISOString()}`);
     timeslotsData.timeslots.forEach(timeslot => {
-
         const [startHours, startMinutes] = timeslot.start.split(':').map(Number);
         startTime.setHours(startHours, startMinutes, 0, 0);
 
@@ -68,53 +67,41 @@ function monitorTimeslots() {
 
             console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${JSON.stringify(currentCalls)}`);
 
-            var callCount = 0;
+            currentCalls.forEach((call, index) => {
+                const callIdentifier = `${timeslot.timeslot}-${index}`;
 
-            currentCalls.forEach(call => {
-                const callerId = emojiToUserIdMap[call.callerEmoji];
-                const calleeId = emojiToUserIdMap[call.calleeEmoji];
+                if (!activeCalls.has(callIdentifier)) {
+                    const callerId = emojiToUserIdMap[call.callerEmoji];
+                    const calleeId = emojiToUserIdMap[call.calleeEmoji];
+                    let isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji).isAvailable;
+                    let isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji).isAvailable;
 
-                isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji).isAvailable;
-                isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji).isAvailable;
+                    if (isCalleeAvailable && isCallerAvailable) {
+                        let channelId;
+                        if (index === 0) channelId = VOICE_CHANNEL_ID_1;
+                        else if (index === 1) channelId = VOICE_CHANNEL_ID_2;
+                        else if (index === 2) channelId = VOICE_CHANNEL_ID_3;
 
-                if (isCalleeAvailable && isCallerAvailable) {
-                    if (callCount == 0) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_1, timeslot.timeslot);
+                        moveUsers(callerId, calleeId, channelId, timeslot.timeslot);
+                    } else {
+                        console.log('User is not available, call cancelled');
                     }
-                    else if (callCount == 1) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_2, timeslot.timeslot);
-                    }
-                    else if (callCount == 2) {
-                        moveUsers(callerId, calleeId, VOICE_CHANNEL_ID_3, timeslot.timeslot);
-                    }
-                    callCount++;
+
+                    const duration = endTime.getTime() - now.getTime();
+                    setTimeout(() => {
+                        moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID);
+                        eventEmitter.emit('log', [new Date().toISOString(), 'Ending call between ', call.callerEmoji + ' and ' + call.calleeEmoji + ' at timeslot ' + timeslot.timeslot]);
+                        activeCalls.delete(callIdentifier);
+                    }, duration);
+
+                    activeCalls.set(callIdentifier, true);
                 }
-                else {
-                    console.log('User is not available, call cancelled');
-                    let logMessage = '';
-                    if (!isCalleeAvailable && !isCallerAvailable) {
-                        logMessage = 'Both ' + call.callerEmoji + ' and ' + call.calleeEmoji + ' have their fan closed';
-                    }
-                    else if (!isCalleeAvailable) {
-                        logMessage = call.callerEmoji + ' has their fan closed';
-                    }
-                    else if (!isCallerAvailable) {
-                        logMessage = call.calleeEmoji + ' has their fan closed';
-                    }
-
-                    if (!eventEmitted) {
-                        eventEmitter.emit('log', [new Date().toISOString(), 'Scheduled call not started, reason: ' + logMessage]);
-                        eventEmitted = true;
-                    }
-                }
-
-                const duration = (endTime.getTime() - now.getTime());
-                setTimeout(() => moveUsersOut(callerId, calleeId, LOBBY_CHANNEL_ID), duration); // TODO: add logging for call ending
             });
         }
     });
     setTimeout(monitorTimeslots, 1000);
 }
+
 
 async function moveUsers(callerId, calleeId, channelId, timeslot) {
     const userIds = [callerId, calleeId];
@@ -149,22 +136,28 @@ async function moveUsers(callerId, calleeId, channelId, timeslot) {
 }
 
 async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
-    const userIds = [callerId, calleeId];
     const guild = client.guilds.cache.first();
     const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
+    let usersMoved = [];
 
-    [callerId, calleeId].forEach(async userId => {
+    const userIds = [callerId, calleeId];
+
+    await Promise.all(userIds.map(async (userId) => {
         try {
             const member = await guild.members.fetch(userId);
             if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
+               
+                usersMoved.push(member.user.username);
+                console.log(`Moved ${member.user.username} back to the lobby.`);
                 await member.voice.setChannel(lobbyChannel);
                 await member.voice.setMute(true);
-                console.log(`Moved ${member.user.username} back to the lobby.`);
             }
         } catch (error) {
             console.error(`Error moving user ${userId} back to the lobby:`, error);
         }
-    });
+    }));
+
+    // eventEmitter.emit('log', [new Date().toISOString(), 'Ending call between ', usersMoved[0] + ' and ' + usersMoved[1]]);
 }
 
 client.login(token);
