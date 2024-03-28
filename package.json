@@ -19,7 +19,8 @@
     "ffmpeg-static": "^5.2.0",
     "fs": "^0.0.1-security",
     "http-proxy": "^1.18.1",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.7.2",
+    "sodium": "^3.0.2"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
