@@ -2,4 +2,4 @@
 .env
 credentials.json
 logs.csv
-timeslots.json
+src/timeslots.json
