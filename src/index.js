@@ -153,14 +153,18 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
     const guild = client.guilds.cache.first();
     const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
 
-    for (const userId of userIds) {
-        const member = await guild.members.fetch(userId);
-        if (member && member.voice.channelId !== lobbyChannelId) {
-            await member.voice.setChannel(lobbyChannel)
-                .then(() => console.log(`Moved ${member.user.username} back to the lobby.`))
-                .catch(console.error);
+    [callerId, calleeId].forEach(async userId => {
+        try {
+            const member = await guild.members.fetch(userId);
+            if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
+                await member.voice.setChannel(lobbyChannel);
+                await member.voice.setMute(true);
+                console.log(`Moved ${member.user.username} back to the lobby.`);
+            }
+        } catch (error) {
+            console.error(`Error moving user ${userId} back to the lobby:`, error);
         }
-    };
+    });
 }
 
 client.login(token);
