@@ -1,6 +1,7 @@
 const userService = require('../services/userService');
 const callService = require('../services/callService');
-const loggingService = require('../services/loggingService');
+const eventEmitter = require('../utils/eventEmitter');
+require('../services/loggingService');
 
 module.exports = function(io) {
     io.on('connection', async (socket) => {
@@ -9,26 +10,22 @@ module.exports = function(io) {
         const currentCalls = await callService.getCalls();
         io.emit('users', { users: users, calls: currentCalls });
         io.emit('newCall', currentCalls);
-        
-        socket.on('disconnect', async () => {
-            const users = await userService.getUsers();
-            console.log('DISCONNECT')
-            // TODO: write to log
-        });
 
         socket.on('toggleFan', async (emoji) => {
-            console.log('Toggling fan')
+            console.log('Toggling fan');
             await userService.toggleUserAvailability(emoji);
             const users = await userService.getUsers();
             const calls = await callService.getCalls();
             io.emit('users', { users: users, calls: calls });
+            var message = users.find(user => user.emoji === emoji).isAvailable ? 'Opened fan' : 'Closed fan';
+            eventEmitter.emit('log', [new Date().toISOString(), emoji, message]);
         });
 
         socket.on('callUser', async (data) => {
             await callService.addCall(data.callerEmoji, data.calleeEmoji, data.timeslot);
             const currentCalls = await callService.getCalls();
             io.emit('newCall', currentCalls);
-            await loggingService.insertRow([new Date().toISOString(), data.callerEmoji, data.calleeEmoji, data.timeslot]);
+            eventEmitter.emit('log', [new Date().toISOString(), 'Call initiated by ' + data.callerEmoji + ' to ' + data.calleeEmoji + ' at timeslot ' + data.timeslot]);
         });
 
         socket.on('userSignedIn', async (selectedEmoji) => {

@@ -1,7 +1,18 @@
 const fs = require('fs');
 const path = require('path');
+const eventEmitter = require('../utils/eventEmitter');
 
-async function insertRow(data) {
+eventEmitter.on('log', (data) => {
+    console.log('Log event emitted');
+    try {
+        insertRow(data);
+    }
+    catch (err) {
+        console.error('Error in log event:', err);
+    }
+});
+
+function insertRow(data) {
     try {
         const csvFile = path.join(path.resolve(__dirname, '..'), 'logs.csv');
         const dataStr = data.join(',') + '\n';
