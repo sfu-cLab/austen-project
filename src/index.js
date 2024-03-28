@@ -134,14 +134,12 @@ async function moveUsers(callerId, calleeId, channelId, timeslot) {
             usersInCall.push(member.user.username);
         }
     };
-    // get emojis of users in call
-    callerUsername = usersInCall[0];
-    calleeUsername = usersInCall[1];
-    callerEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === callerId);
-    calleeEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === calleeId);
-
-
-    if (usersInCall.length > 0) {
+    
+    if (usersInCall.length > 1) {
+        callerUsername = usersInCall[0];
+        calleeUsername = usersInCall[1];
+        callerEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === callerId);
+        calleeEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === calleeId);
         eventEmitter.emit('log', [new Date().toISOString(), 'Starting call between ', callerEmoji + ' and ' + calleeEmoji + ' at timeslot ' + timeslot]);
     }
 }
