@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 const eventEmitter = require('./utils/eventEmitter');
+const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const client = new Client({
@@ -142,6 +143,37 @@ async function moveUsers(callerId, calleeId, channelId, timeslot) {
         callerEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === callerId);
         calleeEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === calleeId);
         eventEmitter.emit('log', [new Date().toISOString(), 'Starting call between ', callerEmoji + ' and ' + calleeEmoji + ' at timeslot ' + timeslot]);
+
+        const connection = joinVoiceChannel({
+            channelId: channel.id,
+            guildId: guild.id,
+            adapterCreator: guild.voiceAdapterCreator,
+        });
+
+        const player = createAudioPlayer();
+
+        connection.subscribe(player);
+
+        player.on('error', error => console.error(error));
+        player.on(AudioPlayerStatus.Idle, () => player.stop());
+
+        const musicPath = path.join(__dirname, 'music.mp3');
+        const resource = createAudioResource(musicPath);
+
+        player.play(resource);
+        
+        console.log(`Playing music in ${channel.name}`);
+
+        connection.on(VoiceConnectionStatus.Disconnected, async () => {
+            try {
+                await Promise.race([
+                    entersState(connection, VoiceConnectionStatus.Signalling, 5000),
+                    entersState(connection, VoiceConnectionStatus.Connecting, 5000),
+                ]);
+            } catch (error) {
+                connection.destroy();
+            }
+        });
     }
 }
 
