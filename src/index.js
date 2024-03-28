@@ -28,7 +28,8 @@ const emojiToUserIdMap = {
     "🌼": USER_ID_1,
     "🦆": USER_ID_2,
     "📘": USER_ID_3,
-    "🌲": USER_ID_4
+    "🌲": USER_ID_4,
+    "🌰": USER_ID_5,
 };
 
 const timeslotsData = JSON.parse(fs.readFileSync('src/timeslots.json', 'utf-8'));
@@ -148,23 +149,18 @@ async function moveUsers(callerId, calleeId, channelId, timeslot) {
 }
 
 async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
+    const userIds = [callerId, calleeId];
     const guild = client.guilds.cache.first();
     const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
-    
-    [callerId, calleeId].forEach(async userId => {
-        try {
-            const member = await guild.members.fetch(userId);
-            if ([VOICE_CHANNEL_ID_1, VOICE_CHANNEL_ID_2, VOICE_CHANNEL_ID_3].includes(member.voice.channelId)) {
-                await member.voice.setChannel(lobbyChannel);
-                await member.voice.setMute(true);
-                // TODO: add logging for call ending
-                // eventEmitter.emit('log', [new Date().toISOString(), member.user.username, 'Moved back to lobby']);
-                console.log(`Moved ${member.user.username} back to the lobby.`);
-            }
-        } catch (error) {
-            console.error(`Error moving user ${userId} back to the lobby:`, error);
+
+    for (const userId of userIds) {
+        const member = await guild.members.fetch(userId);
+        if (member && member.voice.channelId !== lobbyChannelId) {
+            await member.voice.setChannel(lobbyChannel)
+                .then(() => console.log(`Moved ${member.user.username} back to the lobby.`))
+                .catch(console.error);
         }
-    });
+    };
 }
 
 client.login(token);
