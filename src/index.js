@@ -30,6 +30,7 @@ const emojiToUserIdMap = {
     "📘": USER_ID_3,
     "🌲": USER_ID_4,
     "🌰": USER_ID_5,
+    "🐈": USER_ID_6
 };
 
 const timeslotsData = JSON.parse(fs.readFileSync('src/timeslots.json', 'utf-8'));
