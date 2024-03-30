@@ -198,8 +198,6 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
             console.error(`Error moving user ${userId} back to the lobby:`, error);
         }
     }));
-
-    // eventEmitter.emit('log', [new Date().toISOString(), 'Ending call between ', usersMoved[0] + ' and ' + usersMoved[1]]);
 }
 
 client.login(token);
