@@ -75,8 +75,8 @@ function monitorTimeslots() {
                 if (!activeCalls.has(callIdentifier)) {
                     const callerId = emojiToUserIdMap[call.callerEmoji];
                     const calleeId = emojiToUserIdMap[call.calleeEmoji];
-                    let isCalleeAvailable = usersData.find(user => call.callerEmoji === user.emoji).isAvailable;
-                    let isCallerAvailable = usersData.find(user => call.calleeEmoji === user.emoji).isAvailable;
+                    let isCalleeAvailable = usersData.find(user => call.calleeEmoji === user.emoji).isAvailable;
+                    let isCallerAvailable = usersData.find(user => call.callerEmoji === user.emoji).isAvailable;
 
                     if (isCalleeAvailable && isCallerAvailable) {
                         let channelId;
