@@ -3,4 +3,4 @@
 credentials.json
 logs.csv
 timeslots.json
-music.mp3
+*.mp3
