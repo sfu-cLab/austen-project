@@ -6,14 +6,15 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 const eventEmitter = require('./utils/eventEmitter');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus } = require('@discordjs/voice');
+const { createReadStream } = require('fs')
 
 const MUSIC_FILE_1 = path.join(__dirname, 'music.mp3');
 const MUSIC_FILE_2 = path.join(__dirname, 'music2.mp3');
 const MUSIC_FILE_3 = path.join(__dirname, 'music2.mp3');
 
 const { Client, GatewayIntentBits } = require('discord.js');
-const client = new Client({
+const client1 = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates
@@ -34,9 +35,17 @@ const client3 = new Client({
     ]
 });
 
-const token = process.env.DISCORD_BOT_TOKEN;
+const client4 = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const token1 = process.env.DISCORD_BOT_TOKEN;
 const token2 = process.env.DISCORD_BOT_TOKEN_2;
 const token3 = process.env.DISCORD_BOT_TOKEN_3;
+const token4 = process.env.DISCORD_BOT_TOKEN_4;
 
 const USER_ID_1 = process.env.USER_ID_1;
 const USER_ID_2 = process.env.USER_ID_2;
@@ -67,9 +76,10 @@ function whenClientReady(client) {
 }
 
 Promise.all([
-    whenClientReady(client),
+    whenClientReady(client1),
     whenClientReady(client2),
-    whenClientReady(client3)
+    whenClientReady(client3),
+    whenClientReady(client4)
 ]).then(() => {
     console.log('All bots are ready!');
     monitorTimeslots();
@@ -79,8 +89,6 @@ let activeCalls = new Map();
 
 function monitorTimeslots() {
     const now = new Date();
-    // console.log(now.getHours(), now.getMinutes());
-    // console.log(`Checking timeslots at ${now.toISOString()}`);
     timeslotsData.timeslots.forEach(timeslot => {
         const [startHours, startMinutes] = timeslot.start.split(':').map(Number);
         startTime.setHours(startHours, startMinutes, 0, 0);
@@ -93,8 +101,6 @@ function monitorTimeslots() {
             let callsData = JSON.parse(fs.readFileSync('src/calls.json', 'utf-8'));
             let usersData = JSON.parse(fs.readFileSync('src/users.json', 'utf-8'));
             const currentCalls = callsData[timeslot.timeslot];
-
-            // console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${JSON.stringify(currentCalls)}`);
 
             currentCalls.forEach((call, index) => {
                 const callIdentifier = `${timeslot.timeslot}-${index}`;
@@ -112,11 +118,14 @@ function monitorTimeslots() {
                         else if (index === 2) channelId = VOICE_CHANNEL_ID_3;
 
                         if (index === 0) {
-                            moveUsers(client2, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_1);
+                            console.log('Moving users to channel 1');
+                            moveUsers(client1, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_1);
                         } else if (index === 1) {
-                            moveUsers(client3, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_2);
+                            console.log('Moving users to channel 2');
+                            moveUsers(client2, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_2);
                         } else if (index === 2) {
-                            moveUsers(client4, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_3);
+                            console.log('Moving users to channel 3');
+                            moveUsers(client3, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_3);
                         }
                         
                     } else {
@@ -149,7 +158,6 @@ function monitorTimeslots() {
     setTimeout(monitorTimeslots, 1000);
 }
 
-
 async function moveUsers(curClient, callerId, calleeId, channelId, timeslot, musicPath) {
     const userIds = [callerId, calleeId];
     const guild = curClient.guilds.cache.first();
@@ -179,9 +187,10 @@ async function moveUsers(curClient, callerId, calleeId, channelId, timeslot, mus
         eventEmitter.emit('log', [new Date().toISOString(), 'Starting call between ', callerEmoji + ' and ' + calleeEmoji + ' at timeslot ' + timeslot]);
         
         const connection = joinVoiceChannel({
-            channelId: channel.id,
+            channelId: channelId,
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator,
+            group: curClient.user.id
         });
 
         const player = createAudioPlayer();
@@ -190,26 +199,15 @@ async function moveUsers(curClient, callerId, calleeId, channelId, timeslot, mus
         player.on('error', error => console.error(error));
         player.on(AudioPlayerStatus.Idle, () => player.stop());
 
-        const resource = createAudioResource(musicPath);
+        const resource = createAudioResource(createReadStream(musicPath))
         player.play(resource);
         
-        console.log(`Playing music in ${channel.name}`);
-
-        connection.on(VoiceConnectionStatus.Disconnected, async () => {
-            try {
-                await Promise.race([
-                    entersState(connection, VoiceConnectionStatus.Signalling, 5000),
-                    entersState(connection, VoiceConnectionStatus.Connecting, 5000),
-                ]);
-            } catch (error) {
-                console.log("voice error")
-            }
-        });
+        console.log(`Playing music in ${channel.name} with bot ${curClient.user.username}.`);
     }
 }
 
 async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
-    const guild = client.guilds.cache.first();
+    const guild = client1.guilds.cache.first();
     const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
     let usersMoved = [];
 
@@ -231,10 +229,10 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
     }));
 }
 
-client.login(token);
+client1.login(token1);
 client2.login(token2);
 client3.login(token3);
-// client4.login(token4);
+client4.login(token4);
 
 const app = express();
 const PORT = 443;
