@@ -6,17 +6,46 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config();
 const eventEmitter = require('./utils/eventEmitter');
-const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus, VoiceConnectionStatus } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus } = require('@discordjs/voice');
+const { createReadStream } = require('fs')
+
+const MUSIC_FILE_1 = path.join(__dirname, 'music.mp3');
+const MUSIC_FILE_2 = path.join(__dirname, 'music2.mp3');
+const MUSIC_FILE_3 = path.join(__dirname, 'music2.mp3');
 
 const { Client, GatewayIntentBits } = require('discord.js');
-const client = new Client({
+const client1 = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildVoiceStates
     ]
 });
 
-const token = process.env.DISCORD_BOT_TOKEN;
+const client2 = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const client3 = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const client4 = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildVoiceStates
+    ]
+});
+
+const token1 = process.env.DISCORD_BOT_TOKEN;
+const token2 = process.env.DISCORD_BOT_TOKEN_2;
+const token3 = process.env.DISCORD_BOT_TOKEN_3;
+const token4 = process.env.DISCORD_BOT_TOKEN_4;
 
 const USER_ID_1 = process.env.USER_ID_1;
 const USER_ID_2 = process.env.USER_ID_2;
@@ -42,9 +71,17 @@ const VOICE_CHANNEL_ID_2 = process.env.VOICE_CHANNEL_ID_2;
 const VOICE_CHANNEL_ID_3 = process.env.VOICE_CHANNEL_ID_3;
 
 const startTime = new Date();
+function whenClientReady(client) {
+    return new Promise(resolve => client.once('ready', resolve));
+}
 
-client.once('ready', () => {
-    console.log('Bot is ready.');
+Promise.all([
+    whenClientReady(client1),
+    whenClientReady(client2),
+    whenClientReady(client3),
+    whenClientReady(client4)
+]).then(() => {
+    console.log('All bots are ready!');
     monitorTimeslots();
 });
 
@@ -52,8 +89,6 @@ let activeCalls = new Map();
 
 function monitorTimeslots() {
     const now = new Date();
-    console.log(now.getHours(), now.getMinutes());
-    console.log(`Checking timeslots at ${now.toISOString()}`);
     timeslotsData.timeslots.forEach(timeslot => {
         const [startHours, startMinutes] = timeslot.start.split(':').map(Number);
         startTime.setHours(startHours, startMinutes, 0, 0);
@@ -66,8 +101,6 @@ function monitorTimeslots() {
             let callsData = JSON.parse(fs.readFileSync('src/calls.json', 'utf-8'));
             let usersData = JSON.parse(fs.readFileSync('src/users.json', 'utf-8'));
             const currentCalls = callsData[timeslot.timeslot];
-
-            console.log(`Current timeslot: ${timeslot.timeslot} - setting up calls: ${JSON.stringify(currentCalls)}`);
 
             currentCalls.forEach((call, index) => {
                 const callIdentifier = `${timeslot.timeslot}-${index}`;
@@ -84,7 +117,17 @@ function monitorTimeslots() {
                         else if (index === 1) channelId = VOICE_CHANNEL_ID_2;
                         else if (index === 2) channelId = VOICE_CHANNEL_ID_3;
 
-                        moveUsers(callerId, calleeId, channelId, timeslot.timeslot);
+                        if (index === 0) {
+                            console.log('Moving users to channel 1');
+                            moveUsers(client1, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_1);
+                        } else if (index === 1) {
+                            console.log('Moving users to channel 2');
+                            moveUsers(client2, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_2);
+                        } else if (index === 2) {
+                            console.log('Moving users to channel 3');
+                            moveUsers(client3, callerId, calleeId, channelId, timeslot.timeslot, MUSIC_FILE_3);
+                        }
+                        
                     } else {
                         console.log('User is not available, call cancelled');
                         let reason = '';
@@ -115,10 +158,9 @@ function monitorTimeslots() {
     setTimeout(monitorTimeslots, 1000);
 }
 
-
-async function moveUsers(callerId, calleeId, channelId, timeslot) {
+async function moveUsers(curClient, callerId, calleeId, channelId, timeslot, musicPath) {
     const userIds = [callerId, calleeId];
-    const guild = client.guilds.cache.first();
+    const guild = curClient.guilds.cache.first();
     const channel = await guild.channels.fetch(channelId);
     let usersInCall = [];
     
@@ -143,42 +185,29 @@ async function moveUsers(callerId, calleeId, channelId, timeslot) {
         callerEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === callerId);
         calleeEmoji = Object.keys(emojiToUserIdMap).find(key => emojiToUserIdMap[key] === calleeId);
         eventEmitter.emit('log', [new Date().toISOString(), 'Starting call between ', callerEmoji + ' and ' + calleeEmoji + ' at timeslot ' + timeslot]);
-
+        
         const connection = joinVoiceChannel({
-            channelId: channel.id,
+            channelId: channelId,
             guildId: guild.id,
             adapterCreator: guild.voiceAdapterCreator,
+            group: curClient.user.id
         });
 
         const player = createAudioPlayer();
-
         connection.subscribe(player);
 
         player.on('error', error => console.error(error));
         player.on(AudioPlayerStatus.Idle, () => player.stop());
 
-        const musicPath = path.join(__dirname, 'music.mp3');
-        const resource = createAudioResource(musicPath);
-
+        const resource = createAudioResource(createReadStream(musicPath))
         player.play(resource);
         
-        console.log(`Playing music in ${channel.name}`);
-
-        connection.on(VoiceConnectionStatus.Disconnected, async () => {
-            try {
-                await Promise.race([
-                    entersState(connection, VoiceConnectionStatus.Signalling, 5000),
-                    entersState(connection, VoiceConnectionStatus.Connecting, 5000),
-                ]);
-            } catch (error) {
-                connection.destroy();
-            }
-        });
+        console.log(`Playing music in ${channel.name} with bot ${curClient.user.username}.`);
     }
 }
 
 async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
-    const guild = client.guilds.cache.first();
+    const guild = client1.guilds.cache.first();
     const lobbyChannel = await guild.channels.fetch(lobbyChannelId);
     let usersMoved = [];
 
@@ -200,7 +229,10 @@ async function moveUsersOut(callerId, calleeId, lobbyChannelId) {
     }));
 }
 
-client.login(token);
+client1.login(token1);
+client2.login(token2);
+client3.login(token3);
+client4.login(token4);
 
 const app = express();
 const PORT = 443;
