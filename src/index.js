@@ -7,7 +7,7 @@ const fs = require('fs');
 require('dotenv').config();
 const eventEmitter = require('./utils/eventEmitter');
 const { joinVoiceChannel, createAudioResource, createAudioPlayer, AudioPlayerStatus } = require('@discordjs/voice');
-const { createReadStream } = require('fs')
+const { createReadStream } = require('fs');
 
 const MUSIC_FILE_1 = path.join(__dirname, 'music.mp3');
 const MUSIC_FILE_2 = path.join(__dirname, 'music2.mp3');
