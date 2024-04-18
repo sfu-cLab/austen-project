@@ -3,6 +3,8 @@ const callService = require('../services/callService');
 const eventEmitter = require('../utils/eventEmitter');
 require('../services/loggingService');
 
+let emojisToSocketIds = {};
+
 module.exports = function(io) {
     io.on('connection', async (socket) => {
         console.log('User connected with socket id: ' + socket.id);
@@ -29,9 +31,21 @@ module.exports = function(io) {
         });
 
         socket.on('userSignedIn', async (selectedEmoji) => {
+            console.log('User signed in with emoji: ' + selectedEmoji);
+            // TODO: add to voice lobby
             await userService.updateUserSignedInStatus(selectedEmoji, true);
             const users = await userService.getUsers();
+            emojisToSocketIds[selectedEmoji] = socket.id;
             io.emit('users', { users: users });
+        });
+
+        socket.on('disconnect', async () => {
+            const users = await userService.getUsers();
+            io.emit('users', { users: users });
+            let emoji = Object.keys(emojisToSocketIds).find(key => emojisToSocketIds[key] === socket.id);
+            eventEmitter.emit('log', [new Date().toISOString(), emoji, 'User disconnected']);
+            await userService.updateUserSignedInStatus(emoji, false);
+            console.log('User disconnected with emoji: ' + emoji);
         });
     });
 };
