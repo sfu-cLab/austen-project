@@ -158,7 +158,7 @@ function submitSelection() {
     const selectedEmoji = document.querySelector('input[name="user"]:checked').value;
     currentUserEmoji = selectedEmoji;
     
-    localStorage.setItem('currentUserEmoji', selectedEmoji);
+    // localStorage.setItem('currentUserEmoji', selectedEmoji);
     socket.emit('userSignedIn', selectedEmoji);
     populateWelcomeText();
     toggleModal(false);
@@ -282,15 +282,8 @@ socket.on('users', function(data) {
     const calls = data.calls;
     const receivedUsers = data.users;
     populateEmojis(receivedUsers, calls); 
-    const savedEmoji = localStorage.getItem('currentUserEmoji');
-    if (savedEmoji) {
-        currentUserEmoji = savedEmoji;
-        populateWelcomeText();
-    }
-    else {
-        populateModalWithUsers(receivedUsers);
-        toggleModal(true);
-    }
+    populateModalWithUsers(receivedUsers);
+    toggleModal(true);
 });
 
 function populateUserModal(users) {
